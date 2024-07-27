@@ -74,5 +74,7 @@ dependencies {
     implementation(libs.arcgis.maps.kotlin.v200504309)
     implementation(libs.com.esri.arcgis.maps.kotlin.toolkit.geoview.compose)
     implementation(libs.androidx.junit.ktx)
+    implementation(libs.androidx.navigation.runtime.ktx)
+    implementation(libs.androidx.navigation.compose)
 
 }
