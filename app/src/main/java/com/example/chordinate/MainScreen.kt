@@ -47,7 +47,15 @@ import androidx.navigation.compose.rememberNavController
 
 import kotlinx.coroutines.launch
 import android.Manifest
+import androidx.compose.material.icons.rounded.AccountBox
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.List
+import androidx.compose.ui.graphics.Color
 import com.arcgismaps.mapping.view.LocationDisplay
+import com.example.chordinate.navigation.BottomNavItem
+import com.example.chordinate.navigation.Navigation
+import com.example.chordinate.navigation.Screens
+import com.example.uceyecomposeversion.ui.components.BottomBar
 import kotlin.reflect.KFunction1
 
 // This file controls the UI/Layout
@@ -83,71 +91,22 @@ fun MainScreen(onAuthorizeClick: () -> Unit, onMapRecenterClick: KFunction1<Loca
             }
         )
     }
-        Scaffold(
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        topBar = {
-            ChordinateAppBar(canNavigateBack = false, navigateUp = { navController.navigateUp() })
-        },
-        content = {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(it)
-            ) {
-                MapView(
-                    modifier = Modifier.weight(1f),
-                    mapViewProxy = mapViewModel.mapViewProxy,
-                    arcGISMap = mapViewModel.map,
-                    onSingleTapConfirmed = mapViewModel::identify,
-                    locationDisplay = locationDisplay,
-                    content = {
-                        // Show a callout only when a lat/lon point is available.
-                        mapViewModel.selectedGeoElement?.let { geoElement ->
-                            Callout(
-                                modifier = Modifier.sizeIn(maxWidth = 250.dp),
-                                location = geoElement.geometry!!.extent.center,
 
-                                // Optional parameters to customize the callout appearance.
-                                shapes = CalloutDefaults.shapes(
-                                    calloutContentPadding = PaddingValues(4.dp)
-                                ),
-                                colorScheme = CalloutDefaults.colors(
-                                    backgroundColor = MaterialTheme.colorScheme.background,
-                                    borderColor = MaterialTheme.colorScheme.outline
-                                )
-                            ) {
-                                // Callout content:
-                                Text(
-                                    text = mapViewModel.calloutContent,
-                                    style = MaterialTheme.typography.labelSmall
-                                )
-                            }
-                        }
-                    }
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (isLoggedIn) {
-                        Text(text = "Logged in with Spotify")
-                    } else {
-                        Button(onClick = onAuthorizeClick) {
-                            Text("Login with Spotify")
-                        }
-                    }
-                    Button(onClick = { onMapRecenterClick(locationDisplay)}) {
-                        Text("Re-center")
-                    }
-                    Text(
-                        text = songInfo,
-                        modifier = Modifier.padding(top = 16.dp)
-                    )
-                }
-            }
-        }
+    val navController = rememberNavController()
+    val bottomNavItems = listOf(
+        BottomNavItem(Screens.About.screen, Screens.About.icon, Screens.About.name ),
+        BottomNavItem(Screens.MapScreen.screen, Screens.MapScreen.icon, Screens.MapScreen.name ),
+        BottomNavItem(Screens.RecPlaylist.screen, Screens.RecPlaylist.icon, Screens.RecPlaylist.name ),
     )
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        topBar = { ChordinateAppBar(canNavigateBack = false, navigateUp = { navController.navigateUp() }) },
+
+        bottomBar = { BottomBar(navController = navController, items = bottomNavItems) }
+        ) { innerPadding ->
+            Navigation(onAuthorizeClick, onMapRecenterClick, songInfo, isLoggedIn, navController = navController, paddingValues = innerPadding)
+            }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
