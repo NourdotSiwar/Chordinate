@@ -9,7 +9,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +28,7 @@ import okhttp3.Response
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import com.example.chordinate.ui.theme.AppTheme
 
 //This file servers as main entry of program
 
@@ -97,7 +97,7 @@ class MainActivity : ComponentActivity() {
 
         // Set up the user interface
         setContent {
-            MaterialTheme {
+            AppTheme {
                 Surface {
                     MainScreen(
                         onAuthorizeClick = ::authorizeWithSpotify, songInfo = songInfo, isLoggedIn = isLoggedIn,
