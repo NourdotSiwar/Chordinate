@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Chordinate</string>
-    <string name="callout_text">"Lat: %.4f, Lon: %.4f"</string>
+    <string name="callout_text">"Song: %s\nAlbum: %s"</string>
     <string name="back_button">Back</string>
 </resources>

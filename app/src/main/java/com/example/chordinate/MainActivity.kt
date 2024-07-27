@@ -36,12 +36,11 @@ class MainActivity : ComponentActivity() {
     // Launcher to handle the Spotify authentication result
     private lateinit var spotifyAuthLauncher: ActivityResultLauncher<Intent>
     private var songInfo by mutableStateOf("No song info")
-
+    private var isLoggedIn by mutableStateOf(false)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setApiKey()
-
 
         Log.d(TAG, "onCreate: Starting MainActivity")
 
@@ -62,45 +61,63 @@ class MainActivity : ComponentActivity() {
                             // Successfully received access token
                             val accessToken = response.accessToken
                             Log.d(TAG, "Access Token: $accessToken")
+                            saveAccessToken(accessToken)
+                            isLoggedIn = true // Update login status
                             // Handle access token (e.g., store it securely and proceed with authenticated actions)
                             fetchCurrentlyPlayingSong(accessToken)
                         }
 
                         AuthorizationResponse.Type.ERROR -> {
+                            isLoggedIn = false
                             Log.e(TAG, "Error: ${response.error}")
                             songInfo = "Error: ${response.error}"
                         }
 
                         else -> {
                             // Other response types
+                            isLoggedIn = false
                             Log.w(TAG, "Unhandled response type: ${response.type}")
                             songInfo = "Unhandled response type: ${response.type}"
                         }
                     }
                 } else {
+                    isLoggedIn = false
                     Log.e(TAG, "Intent was null or resultCode was not RESULT_OK")
                     // Handle cases where result is not OK
                     songInfo = "Failed to get result"
                 }
             }
 
+        val savedToken = getSavedAccessToken()
+        if (savedToken != null) {
+            isLoggedIn = true
+            fetchCurrentlyPlayingSong(savedToken)
+        }
+
         // Set up the user interface
         setContent {
             MaterialTheme {
                 Surface {
                     MainScreen(
-                        onAuthorizeClick = ::authorizeWithSpotify,
-                        onMapRecenterClick = ::recenterMap,
-                        songInfo = songInfo
+                        onAuthorizeClick = ::authorizeWithSpotify, songInfo = songInfo, isLoggedIn = isLoggedIn,
+                        onMapRecenterClick = ::recenterMap
                     )
                 }
             }
         }
     }
 
+    private fun saveAccessToken(accessToken: String) {
+        getSharedPreferences("SpotifyAuth", MODE_PRIVATE).edit().putString("ACCESS_TOKEN", accessToken).apply()
+    }
+
+    private fun getSavedAccessToken(): String? {
+        return getSharedPreferences("SpotifyAuth", MODE_PRIVATE).getString("ACCESS_TOKEN", null)
+    }
+
     private fun setApiKey() {
         ArcGISEnvironment.apiKey =
-            ApiKey.create("AAPTxy8BH1VEsoebNVZXo8HurLlp_B8QY4A9dXRZiSER6g8HlIST8IkwpSOZmCHK0mizPjO06fEzeJTRSrG3kFYuTq05oefdr4wxDJ6D6jnTw1_FNbkIEgpyaEjXZ4yVdOYLbadNWPUPPhC1GhW9GloSoxEprhXSlHPt5B9kOygvAVoVu0EAvA62Atn9usD3ewfI9CYpX9gNWTXeBYy1WeLQXt6FM2yxMZAWZzfJstNLX89pZYf9-WIqSgnrRnuO1mKfAT1_xZUNSRfZ")
+            ApiKey.create("AAPK22bba5d8eb024b63b166b5e260536d7bnBKbDuc1HGVEPAjQ1NVHY6hUhEoLHMAD_ELwR75UqgYtgIf6S4GJe9umAXaOV6os")
     }
 
 
@@ -182,6 +199,8 @@ class MainActivity : ComponentActivity() {
 
         })
     }
+
+
 
     // Constants for Spotify authorization
     object SpotifyConstants {
