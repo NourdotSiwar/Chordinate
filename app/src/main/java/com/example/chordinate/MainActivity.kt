@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.arcgismaps.ApiKey
 import com.arcgismaps.ArcGISEnvironment
+import com.arcgismaps.location.LocationDisplayAutoPanMode
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
@@ -40,6 +41,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setApiKey()
+
 
         Log.d(TAG, "onCreate: Starting MainActivity")
 
@@ -87,7 +89,9 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 Surface {
                     MainScreen(
-                        onAuthorizeClick = ::authorizeWithSpotify, songInfo = songInfo
+                        onAuthorizeClick = ::authorizeWithSpotify,
+                        onMapRecenterClick = ::recenterMap,
+                        songInfo = songInfo
                     )
                 }
             }
@@ -114,6 +118,13 @@ class MainActivity : ComponentActivity() {
 
         val intent = AuthorizationClient.createLoginActivityIntent(this, request)
         spotifyAuthLauncher.launch(intent)
+    }
+
+    private fun recenterMap() {
+        Log.d(TAG, "recentering map...")
+
+        //locationDisplay.setAutoPanMode(LocationDisplayAutoPanMode.Recenter)
+
     }
 
     private fun fetchCurrentlyPlayingSong(accessToken: String) {

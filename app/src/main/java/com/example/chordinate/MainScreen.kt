@@ -68,6 +68,7 @@ fun ChordinateAppBar(
 @Composable
 fun MainScreen(
     onAuthorizeClick: () -> Unit,
+    onMapRecenterClick: () -> Unit,
     songInfo: String,
     navController: NavHostController = rememberNavController()
 ) {
@@ -122,6 +123,9 @@ fun MainScreen(
                 ) {
                     Button(onClick = { onAuthorizeClick() }) {
                         Text("Login with Spotify")
+                    }
+                    Button(onClick = { onMapRecenterClick()}) {
+                        Text("Recenter")
                     }
                     Text(
                         text = songInfo,
