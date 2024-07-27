@@ -1,4 +1,4 @@
-package com.example.chordinit
+package com.example.chordinate
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

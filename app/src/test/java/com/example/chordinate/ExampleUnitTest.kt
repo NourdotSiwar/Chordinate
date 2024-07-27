@@ -1,4 +1,4 @@
-package com.example.chordinit
+package com.example.chordinate
 
 import org.junit.Test
 
