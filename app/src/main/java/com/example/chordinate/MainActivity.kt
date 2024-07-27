@@ -35,7 +35,7 @@ class MainActivity : ComponentActivity() {
     // Launcher to handle the Spotify authentication result
     private lateinit var spotifyAuthLauncher: ActivityResultLauncher<Intent>
     private var songInfo by mutableStateOf("No song info")
-
+    private var isLoggedIn by mutableStateOf(false)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -60,38 +60,57 @@ class MainActivity : ComponentActivity() {
                             // Successfully received access token
                             val accessToken = response.accessToken
                             Log.d(TAG, "Access Token: $accessToken")
+                            saveAccessToken(accessToken)
+                            isLoggedIn = true // Update login status
                             // Handle access token (e.g., store it securely and proceed with authenticated actions)
                             fetchCurrentlyPlayingSong(accessToken)
                         }
 
                         AuthorizationResponse.Type.ERROR -> {
+                            isLoggedIn = false
                             Log.e(TAG, "Error: ${response.error}")
                             songInfo = "Error: ${response.error}"
                         }
 
                         else -> {
                             // Other response types
+                            isLoggedIn = false
                             Log.w(TAG, "Unhandled response type: ${response.type}")
                             songInfo = "Unhandled response type: ${response.type}"
                         }
                     }
                 } else {
+                    isLoggedIn = false
                     Log.e(TAG, "Intent was null or resultCode was not RESULT_OK")
                     // Handle cases where result is not OK
                     songInfo = "Failed to get result"
                 }
             }
 
+        val savedToken = getSavedAccessToken()
+        if (savedToken != null) {
+            isLoggedIn = true
+            fetchCurrentlyPlayingSong(savedToken)
+        }
+
         // Set up the user interface
         setContent {
             MaterialTheme {
                 Surface {
                     MainScreen(
-                        onAuthorizeClick = ::authorizeWithSpotify, songInfo = songInfo
+                        onAuthorizeClick = ::authorizeWithSpotify, songInfo = songInfo, isLoggedIn = isLoggedIn
                     )
                 }
             }
         }
+    }
+
+    private fun saveAccessToken(accessToken: String) {
+        getSharedPreferences("SpotifyAuth", MODE_PRIVATE).edit().putString("ACCESS_TOKEN", accessToken).apply()
+    }
+
+    private fun getSavedAccessToken(): String? {
+        return getSharedPreferences("SpotifyAuth", MODE_PRIVATE).getString("ACCESS_TOKEN", null)
     }
 
     private fun setApiKey() {
@@ -171,6 +190,8 @@ class MainActivity : ComponentActivity() {
 
         })
     }
+
+
 
     // Constants for Spotify authorization
     object SpotifyConstants {

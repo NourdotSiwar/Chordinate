@@ -24,17 +24,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.arcgismaps.geometry.Point
 import com.arcgismaps.mapping.ArcGISMap
-import com.arcgismaps.mapping.BasemapStyle
+import com.arcgismaps.mapping.GeoElement
 import com.arcgismaps.mapping.PortalItem
-import com.arcgismaps.mapping.Viewpoint
 import com.arcgismaps.mapping.layers.FeatureLayer
-import com.arcgismaps.mapping.layers.Layer
 import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.portal.Portal
 import com.arcgismaps.toolkit.geoviewcompose.MapViewProxy
-import com.example.chordinit.R
 import kotlinx.coroutines.launch
 
 class MapViewModel(private val application: Application) : AndroidViewModel(application) {
@@ -43,9 +39,7 @@ class MapViewModel(private val application: Application) : AndroidViewModel(appl
     // Keep track of the state of the callout content String.
     var calloutContent: String by mutableStateOf("")
 
-    // Keep track of the currently selected GeoElement.
-    var selectedGeoElement by mutableStateOf<Point?>(null)
-        private set
+    var selectedGeoElement by mutableStateOf<GeoElement?>(null)
 
     val map = createMap()
 
@@ -64,29 +58,29 @@ class MapViewModel(private val application: Application) : AndroidViewModel(appl
     }
 
     fun identify(singleTapConfirmedEvent: SingleTapConfirmedEvent) {
-        featureLayer?.let {
-            viewModelScope.launch {
-                mapViewProxy.identify(
-                    featureLayer as Layer,
-                    screenCoordinate = singleTapConfirmedEvent.screenCoordinate,
-                    tolerance = 12.dp,
-                    maximumResults = 1
-                ).onSuccess { result ->
-                    result.geoElements.firstOrNull()?.let { observation ->
-                        selectedGeoElement = observation.geometry?.extent?.center
+        viewModelScope.launch {
+            mapViewProxy.identifyLayers(
+                screenCoordinate = singleTapConfirmedEvent.screenCoordinate,
+                tolerance = 12.dp,
+                maximumResults = 1
+            ).onSuccess { results ->
+                if (results.isNotEmpty()) {
+
+                    results.first().geoElements.firstOrNull()?.let { observation ->
+                        selectedGeoElement = observation
                     }
                     //snackbarHostState.showSnackbar("Success $result")
                     calloutContent = application.getString(
                         R.string.callout_text,
-                        selectedGeoElement?.y,
-                        selectedGeoElement?.x
-                    )
-
-                }.onFailure { error ->
-                    snackbarHostState.showSnackbar(
-                        "Error identifying results: ${error.message}. Cause:  ${error.cause}"
+                        selectedGeoElement?.attributes?.getOrDefault("Song", "No song found"),
+                        selectedGeoElement?.attributes?.getOrDefault("Album_Playlist", "No album found")
                     )
                 }
+
+            }.onFailure { error ->
+                snackbarHostState.showSnackbar(
+                    "Error identifying results: ${error.message}. Cause:  ${error.cause}"
+                )
             }
         }
     }
@@ -94,28 +88,17 @@ class MapViewModel(private val application: Application) : AndroidViewModel(appl
     private fun createMap(): ArcGISMap {
 
         val portal = Portal(
-            url = "https://www.arcgis.com",
+            url = "https://intern-hackathon.maps.arcgis.com/",
             connection = Portal.Connection.Anonymous
         )
 
         val portalItem = PortalItem(
             portal = portal,
-            itemId = "2e4b3df6ba4b44969a3bc9827de746b3"
+            itemId = "7f954da98e2c42d099af1632d2cb6d65"
         )
 
-        featureLayer = FeatureLayer.createWithItem(portalItem)
+        featureLayer = FeatureLayer.createWithItemAndLayerId(portalItem, 0)
 
-        return ArcGISMap(BasemapStyle.ArcGISTopographic).apply {
-            initialViewpoint = Viewpoint(
-                latitude = 34.0270,
-                longitude = -118.8050,
-                scale = 72000.0
-            )
-
-            operationalLayers.add(featureLayer!!)
-
-        }
-
+        return ArcGISMap(portalItem)
     }
-
 }
