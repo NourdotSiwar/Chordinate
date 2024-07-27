@@ -1,4 +1,4 @@
-package com.example.chordinit
+package com.example.chordinate
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

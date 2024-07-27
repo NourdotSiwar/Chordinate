@@ -1,4 +1,4 @@
-package com.example.chordinit
+package com.example.chordinate
 
 import android.content.ContentValues.TAG
 import android.content.Intent

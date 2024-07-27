@@ -14,7 +14,7 @@
  *
  */
 
-package com.example.chordinit
+package com.example.chordinate
 
 import android.app.Application
 import androidx.compose.material3.SnackbarHostState
@@ -34,6 +34,7 @@ import com.arcgismaps.mapping.layers.Layer
 import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.portal.Portal
 import com.arcgismaps.toolkit.geoviewcompose.MapViewProxy
+import com.example.chordinit.R
 import kotlinx.coroutines.launch
 
 class MapViewModel(private val application: Application) : AndroidViewModel(application) {
