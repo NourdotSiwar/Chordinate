@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import com.arcgismaps.ApiKey
 import com.arcgismaps.ArcGISEnvironment
 import com.arcgismaps.location.LocationDisplayAutoPanMode
+import com.arcgismaps.mapping.view.LocationDisplay
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
@@ -137,11 +138,8 @@ class MainActivity : ComponentActivity() {
         spotifyAuthLauncher.launch(intent)
     }
 
-    private fun recenterMap() {
-        Log.d(TAG, "recentering map...")
-
-        //locationDisplay.setAutoPanMode(LocationDisplayAutoPanMode.Recenter)
-
+    private fun recenterMap(locationDisplay: LocationDisplay) {
+        locationDisplay.setAutoPanMode(LocationDisplayAutoPanMode.Recenter)
     }
 
     private fun fetchCurrentlyPlayingSong(accessToken: String) {

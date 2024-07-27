@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,17 +41,18 @@ import com.arcgismaps.location.LocationDisplayAutoPanMode
 import com.arcgismaps.toolkit.geoviewcompose.MapView
 import com.arcgismaps.toolkit.geoviewcompose.rememberLocationDisplay
 import com.arcgismaps.toolkit.geoviewcompose.theme.CalloutDefaults
-import okhttp3.internal.http2.Header
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.rememberNavController
 
 
 import kotlinx.coroutines.launch
 import android.Manifest
+import com.arcgismaps.mapping.view.LocationDisplay
+import kotlin.reflect.KFunction1
+
 // This file controls the UI/Layout
 @Composable
-fun MainScreen(onAuthorizeClick: () -> Unit, onMapRecenterClick: () -> Unit, songInfo: String, isLoggedIn: Boolean, navController: NavHostController = rememberNavController()) {
+fun MainScreen(onAuthorizeClick: () -> Unit, onMapRecenterClick: KFunction1<LocationDisplay, Unit>, songInfo: String, isLoggedIn: Boolean, navController: NavHostController = rememberNavController()) {
 
     val mapViewModel: MapViewModel = viewModel()
     val snackbarHostState = remember { mapViewModel.snackbarHostState }
@@ -137,8 +137,8 @@ fun MainScreen(onAuthorizeClick: () -> Unit, onMapRecenterClick: () -> Unit, son
                             Text("Login with Spotify")
                         }
                     }
-                    Button(onClick = { onMapRecenterClick()}) {
-                        Text("Recenter")
+                    Button(onClick = { onMapRecenterClick(locationDisplay)}) {
+                        Text("Re-center")
                     }
                     Text(
                         text = songInfo,
