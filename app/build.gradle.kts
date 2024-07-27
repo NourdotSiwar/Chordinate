@@ -7,7 +7,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.chordinit"
+        applicationId = "com.example.chordinate"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
@@ -49,7 +49,7 @@ android {
         }
     }
 
-    namespace = "com.example.chordinit"
+    namespace = "com.example.chordinate"
 
 }
 

@@ -34,7 +34,7 @@ import com.arcgismaps.mapping.layers.Layer
 import com.arcgismaps.mapping.view.SingleTapConfirmedEvent
 import com.arcgismaps.portal.Portal
 import com.arcgismaps.toolkit.geoviewcompose.MapViewProxy
-import com.example.chordinit.R
+import com.example.chordinate.R
 import kotlinx.coroutines.launch
 
 class MapViewModel(private val application: Application) : AndroidViewModel(application) {
@@ -94,27 +94,18 @@ class MapViewModel(private val application: Application) : AndroidViewModel(appl
     private fun createMap(): ArcGISMap {
 
         val portal = Portal(
-            url = "https://www.arcgis.com",
+            url = "https://intern-hackathon.maps.arcgis.com/",
             connection = Portal.Connection.Anonymous
         )
 
         val portalItem = PortalItem(
             portal = portal,
-            itemId = "2e4b3df6ba4b44969a3bc9827de746b3"
+            itemId = "7f954da98e2c42d099af1632d2cb6d65"
         )
 
         featureLayer = FeatureLayer.createWithItem(portalItem)
 
-        return ArcGISMap(BasemapStyle.ArcGISTopographic).apply {
-            initialViewpoint = Viewpoint(
-                latitude = 34.0270,
-                longitude = -118.8050,
-                scale = 72000.0
-            )
-
-            operationalLayers.add(featureLayer!!)
-
-        }
+        return ArcGISMap(portalItem)
 
     }
 

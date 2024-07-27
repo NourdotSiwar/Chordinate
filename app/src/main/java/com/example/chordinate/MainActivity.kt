@@ -96,7 +96,7 @@ class MainActivity : ComponentActivity() {
 
     private fun setApiKey() {
         ArcGISEnvironment.apiKey =
-            ApiKey.create("AAPK22bba5d8eb024b63b166b5e260536d7bnBKbDuc1HGVEPAjQ1NVHY6hUhEoLHMAD_ELwR75UqgYtgIf6S4GJe9umAXaOV6os")
+            ApiKey.create("AAPTxy8BH1VEsoebNVZXo8HurLlp_B8QY4A9dXRZiSER6g8HlIST8IkwpSOZmCHK0mizPjO06fEzeJTRSrG3kFYuTq05oefdr4wxDJ6D6jnTw1_FNbkIEgpyaEjXZ4yVdOYLbadNWPUPPhC1GhW9GloSoxEprhXSlHPt5B9kOygvAVoVu0EAvA62Atn9usD3ewfI9CYpX9gNWTXeBYy1WeLQXt6FM2yxMZAWZzfJstNLX89pZYf9-WIqSgnrRnuO1mKfAT1_xZUNSRfZ")
     }
 
 
