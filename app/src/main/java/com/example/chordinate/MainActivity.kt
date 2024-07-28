@@ -1,6 +1,5 @@
 package com.example.chordinate
 
-import MyBroadcastReceiver
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.IntentFilter
@@ -31,9 +30,11 @@ import okhttp3.Response
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import com.example.chordinate.ui.theme.AppTheme
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 
 //This file servers as main entry of program
-
 
 class MainActivity : ComponentActivity() {
 
@@ -41,11 +42,19 @@ class MainActivity : ComponentActivity() {
     private lateinit var spotifyAuthLauncher: ActivityResultLauncher<Intent>
     private var songInfo by mutableStateOf("No song info")
     private var isLoggedIn by mutableStateOf(false)
+
     private lateinit var spotifyReciever: MyBroadcastReceiver
+
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         broadcastSetup()
         setApiKey()
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         Log.d(TAG, "onCreate: Starting MainActivity")
 
@@ -103,14 +112,14 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 Surface {
                     MainScreen(
-                        onAuthorizeClick = ::authorizeWithSpotify,
-                        songInfo = songInfo,
-                        isLoggedIn = isLoggedIn,
+                        onAuthorizeClick = ::authorizeWithSpotify, songInfo = songInfo, isLoggedIn = isLoggedIn
+                        onMapRecenterClick = ::recenterMap, fusedLocationClient = fusedLocationClient
                     )
                 }
             }
         }
     }
+
     private fun saveAccessToken(accessToken: String) {
         getSharedPreferences("SpotifyAuth", MODE_PRIVATE).edit().putString("ACCESS_TOKEN", accessToken).apply()
     }
@@ -124,6 +133,8 @@ class MainActivity : ComponentActivity() {
             ApiKey.create("AAPK22bba5d8eb024b63b166b5e260536d7bnBKbDuc1HGVEPAjQ1NVHY6hUhEoLHMAD_ELwR75UqgYtgIf6S4GJe9umAXaOV6os")
     }
 
+
+    // Initiates Spotify authorization process
     private fun authorizeWithSpotify() {
         Log.d(TAG, "authorizeWithSpotify: Starting Spotify authorization")
         val builder = AuthorizationRequest.Builder(
@@ -195,6 +206,7 @@ class MainActivity : ComponentActivity() {
         })
     }
 
+
     private fun broadcastSetup() {
         spotifyReciever = MyBroadcastReceiver()
         val spotifyFilter = IntentFilter("com.spotify.music.playbackstatechanged")
@@ -211,4 +223,5 @@ class MainActivity : ComponentActivity() {
         const val REDIRECT_URI = "myapp://callback"
     }
 }
+
 
