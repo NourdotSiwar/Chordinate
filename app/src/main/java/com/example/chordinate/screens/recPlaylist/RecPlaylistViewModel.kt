@@ -178,7 +178,7 @@ class RecPlaylistViewModel(private val application: Application) : AndroidViewMo
 
         fun getUri(): String {
             var song_info_fixed = songInfo.song_id.replace("spotify:track:", "")
-            return SPOTIFY_TRACK_URI + song_info_fixedd
+            return SPOTIFY_TRACK_URI + song_info_fixed
         }
     }
 
