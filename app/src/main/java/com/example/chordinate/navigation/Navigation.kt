@@ -45,9 +45,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.example.chordinate.MainActivity.SpotifyConstants
 import com.example.chordinate.ui.theme.AppTheme
-
-private lateinit var spotifyAuthLauncher: ActivityResultLauncher<Intent>
-
+import com.example.chordinate.MapViewScreen
+import com.example.chordinate.AboutScreen
+import com.example.chordinate.RecPLaylistScreen
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -57,38 +57,22 @@ fun Navigation(onAuthorizeClick: () -> Unit, onMapRecenterClick: KFunction1<Loca
         startDestination = Screens.MapScreen.screen,
         modifier = Modifier.padding(paddingValues)
     ) {
-        composable(Screens.About.screen) {
-            AboutScreen()
-        }
         composable(Screens.MapScreen.screen) {
             MapViewScreen()
         }
         composable(Screens.RecPlaylist.screen) {
             RecPLaylistScreen()
         }
-    }
-}
+        composable(Screens.About.screen) {
+            AboutScreen()
+        }
 
-@Composable
-fun MapViewScreen() {
-    Button(onClick = { /*TODO*/ }) {
-        Text(text = "Map View Screen")
     }
 }
 
 
-@Composable
-fun AboutScreen() {
-    Button(onClick = { /*TODO*/ }) {
-      Text(text = "About screen")
-    }
-}
 
-@Composable
-fun RecPLaylistScreen() {
-    Button(onClick = { /*TODO*/ }) {
-        Text(text = "Rec PLaylist screen")
-    }
-}
+
+
 
 

@@ -47,10 +47,18 @@ import androidx.navigation.compose.rememberNavController
 
 import kotlinx.coroutines.launch
 import android.Manifest
+import android.media.Image
+import android.widget.ImageButton
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.rounded.AccountBox
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.List
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import com.arcgismaps.mapping.view.LocationDisplay
 import com.example.chordinate.navigation.BottomNavItem
 import com.example.chordinate.navigation.Navigation
@@ -59,6 +67,7 @@ import com.example.uceyecomposeversion.ui.components.BottomBar
 import kotlin.reflect.KFunction1
 
 // This file controls the UI/Layout
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(onAuthorizeClick: () -> Unit, onMapRecenterClick: KFunction1<LocationDisplay, Unit>, songInfo: String, isLoggedIn: Boolean, navController: NavHostController = rememberNavController()) {
 
@@ -94,20 +103,41 @@ fun MainScreen(onAuthorizeClick: () -> Unit, onMapRecenterClick: KFunction1<Loca
 
     val navController = rememberNavController()
     val bottomNavItems = listOf(
-        BottomNavItem(Screens.About.screen, Screens.About.icon, Screens.About.name ),
         BottomNavItem(Screens.MapScreen.screen, Screens.MapScreen.icon, Screens.MapScreen.name ),
         BottomNavItem(Screens.RecPlaylist.screen, Screens.RecPlaylist.icon, Screens.RecPlaylist.name ),
+        BottomNavItem(Screens.About.screen, Screens.About.icon, Screens.About.name ),
+        )
+
+    val topNavItems = listOf(
+        BottomNavItem(Screens.MapScreen.screen, R.drawable.chordinate_one_line, Screens.MapScreen.name)
     )
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-        topBar = { ChordinateAppBar(canNavigateBack = false, navigateUp = { navController.navigateUp() }) },
+        //If you can change the padding maybe?  Or the size of the icon to make it appear as a banner....  right now it's so small
+        topBar = {
+            Column {
+                TopAppBar(
+                    title = {},
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.primary
+                    ),
+                    navigationIcon = {
+                        Image(painter = painterResource(id = R.drawable.chordinate_one_line), contentDescription =null, Modifier.absoluteOffset(0.dp, 30.dp)
+                        )
+                    },
+                )
+            }
+       },
 
         bottomBar = { BottomBar(navController = navController, items = bottomNavItems) }
         ) { innerPadding ->
-            Navigation(onAuthorizeClick, onMapRecenterClick, songInfo, isLoggedIn, navController = navController, paddingValues = innerPadding)
+            Navigation(onAuthorizeClick, onMapRecenterClick, songInfo, isLoggedIn, navController, innerPadding)
             }
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,7 +147,7 @@ fun ChordinateAppBar(
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
-        title = { Text("Chordinate") },
+        title = { "Chordinate" },
         colors = TopAppBarDefaults.mediumTopAppBarColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer
         ),
@@ -180,4 +210,9 @@ fun checkPermissions(context: Context): Boolean {
 
 fun showError(context: Context, message: String) {
     Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+}
+
+fun donothing()
+{
+
 }
