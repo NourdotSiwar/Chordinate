@@ -1,6 +1,7 @@
 package com.example.chordinate.ui.theme
 
 import androidx.compose.material3.Typography
+
 import androidx.compose.ui.text.font.FontFamily
 import com.example.chordinate.R
 
@@ -47,4 +48,3 @@ val AppTypography = Typography(
     labelMedium = baseline.labelMedium.copy(fontFamily = bodyFontFamily),
     labelSmall = baseline.labelSmall.copy(fontFamily = bodyFontFamily),
 )
-

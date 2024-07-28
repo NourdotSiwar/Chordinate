@@ -1,4 +1,5 @@
 package com.example.chordinate.ui.theme
+
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
@@ -483,4 +484,3 @@ fun AppTheme(
     content = content
   )
 }
-
