@@ -3,6 +3,7 @@ package com.example.chordinate.screens
 
 import MyBroadcastReceiver
 import android.Manifest
+import android.app.Application
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
@@ -40,6 +41,7 @@ import com.arcgismaps.toolkit.geoviewcompose.MapView
 import com.arcgismaps.toolkit.geoviewcompose.MapViewScope
 import com.arcgismaps.toolkit.geoviewcompose.rememberLocationDisplay
 import com.arcgismaps.toolkit.geoviewcompose.theme.CalloutDefaults
+import com.example.chordinate.R
 import com.example.chordinate.viewmodel.MapViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -55,7 +57,7 @@ fun MapViewScreen(onAuthorizeClick: () -> Unit, songInfo: String, isLoggedIn: Bo
     val locationDisplay = rememberLocationDisplay()
     val mapViewModel: MapViewModel = viewModel()
     val snackbarHostState = remember { mapViewModel.snackbarHostState }
-
+    val application = LocalContext.current.applicationContext as Application
     if (checkPermissions(context)) {
         // Permissions are already granted.
         LaunchedEffect(Unit) {
@@ -90,7 +92,9 @@ fun MapViewScreen(onAuthorizeClick: () -> Unit, songInfo: String, isLoggedIn: Bo
                 }
             )
             Column(
-                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -112,7 +116,8 @@ fun MapViewScreen(onAuthorizeClick: () -> Unit, songInfo: String, isLoggedIn: Bo
                         coroutineScope,
                         snackbarHostState,
                         mapViewModel,
-                        locationDisplay
+                        locationDisplay,
+                        application
                     )
                 }, Modifier.padding(top = 8.dp)) {
                     Text("Add my song to the map!")
@@ -126,7 +131,8 @@ private fun addSongPointToWebMap(
     coroutineScope: CoroutineScope,
     snackbarHostState: SnackbarHostState,
     mapViewModel: MapViewModel,
-    locationDisplay: LocationDisplay
+    locationDisplay: LocationDisplay,
+    application: Application
 ) {
     coroutineScope.launch {
         MyBroadcastReceiver.SharedData?.let { info ->
@@ -148,17 +154,58 @@ private fun addSongPointToWebMap(
                 val feature = featureTable.createFeature(attributes, mapLocation)
 
                 featureTable.addFeature(feature).onSuccess {
-                    snackbarHostState.showSnackbar("Added ${feature.attributes["Song"]}")
+                    snackbarHostState.showSnackbar("Adding your song...")
 
                     featureTable.applyEdits().onSuccess {
-                        snackbarHostState.showSnackbar("Saved ${feature.attributes["Song"]}")
+                        snackbarHostState.showSnackbar("Saving to map ...")
                         locationDisplay.setAutoPanMode(LocationDisplayAutoPanMode.Recenter)
                         mapViewModel.mapViewProxy.setViewpointAnimated(
                             Viewpoint(mapLocation), duration = 0.1.seconds
-                        )
-                        locationDisplay.showLocation = false
-                    }.onFailure { e ->
-                        snackbarHostState.showSnackbar("Error applying edits: ${e.message} ${e.cause}")
+                        ).onSuccess {
+                            val screenCoordinate =
+                                mapViewModel.mapViewProxy.locationToScreenOrNull(mapLocation)
+                            locationDisplay.showLocation = false
+
+                            if (screenCoordinate != null) {
+                                mapViewModel.mapViewProxy.identifyLayers(
+                                    screenCoordinate = screenCoordinate,
+                                    tolerance = 12.dp,
+                                    maximumResults = 1
+                                ).onSuccess { results ->
+                                    if (results.isNotEmpty()) {
+
+                                        results.first().geoElements.firstOrNull()
+                                            ?.let { observation ->
+                                                mapViewModel.selectedGeoElement = observation
+                                            }
+                                        // snackbarHostState.showSnackbar("application: $application")
+                                        mapViewModel.calloutContent = application.getString(
+                                            R.string.callout_text,
+                                            mapViewModel.selectedGeoElement?.attributes?.getOrDefault(
+                                                "Song",
+                                                "No song found"
+                                            ),
+                                            mapViewModel.selectedGeoElement?.attributes?.getOrDefault(
+                                                "Album",
+                                                "No album found"
+                                            ),
+                                            mapViewModel.selectedGeoElement?.attributes?.getOrDefault(
+                                                "Artist",
+                                                "No artist found"
+                                            )
+                                        )
+                                    }
+
+                                }.onFailure { error ->
+                                    snackbarHostState.showSnackbar(
+                                        "Error identifying results: ${error.message}. Cause:  ${error.cause}"
+                                    )
+                                    println("Error identifying results: ${error.message}. Cause:  ${error.cause}")
+                                }
+                            }
+                        }.onFailure { e ->
+                            snackbarHostState.showSnackbar("Error applying edits: ${e.message} ${e.cause}")
+                        }
                     }
 
                 }.onFailure {
