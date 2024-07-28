@@ -1,5 +1,6 @@
 package com.example.chordinate
 
+import android.widget.ImageButton
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -107,9 +109,10 @@ fun MapViewScreen() {
                             }
 
                         }
-                        Button(onClick = { donothing() }, modifier=Modifier.size(100.dp).offset(10.dp, 10.dp).padding(0.dp).absolutePadding(0.dp,0.dp,0.dp,0.dp))
+                        // TODO: Lots of hard-coded values here ...
+                        Button(onClick = { recenter(locationDisplay) }, modifier=Modifier.offset(350.dp, 600.dp).size(70.dp))
                         {
-                            Image(painter = painterResource(id = R.drawable.vinyl_option_2_orange_2), contentDescription =null, Modifier.size(1000.dp).padding(0.dp).fillMaxWidth().fillMaxSize().absolutePadding(0.dp,0.dp,0.dp,0.dp))
+                            Image(painter = painterResource(id = R.drawable.vinyl_option_2_orange), contentDescription =null, Modifier.scale(3.5f, 3.5f).offset(0.dp, 1.dp))
                         }
                     }
                 )
@@ -133,5 +136,11 @@ fun MapViewScreen() {
             }
         //}
 }
+
+fun recenter(locationDisplay: LocationDisplay)
+{
+    locationDisplay.setAutoPanMode(LocationDisplayAutoPanMode.Recenter)
+}
+
 
 
