@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="blue_200">#00619BFC</color>
-    <color name="blue_500">#00619BEE</color>
-    <color name="blue_700">#00619BB3</color>
-    <color name="teal_200">#00BAB5C5</color>
-    <color name="teal_700">#00BAB586</color>
-    <color name="accent_blue_200">#50A7DAFC</color>
-    <color name="accent_blue_500">#50A7DAEE</color>
-    <color name="accent_blue_700">#50A7DAB3</color>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="blue_200">#00619B</color>
+    <color name="blue_500">#00619B</color>
+    <color name="blue_700">#00619B</color>
+    <color name="teal_200">#00BAB5</color>
+    <color name="teal_700">#00BAB5</color>
+    <color name="accent_blue_200">#50A7DA</color>
+    <color name="accent_blue_500">#50A7DA</color>
+    <color name="accent_blue_700">#50A7DA</color>
+    <color name="black">#FF0000</color>
+    <color name="white">#FFFFFF</color>
 </resources>

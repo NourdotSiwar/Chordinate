@@ -36,7 +36,7 @@ import kotlin.reflect.KFunction1
 fun MapViewScreen() {
 
     val mapViewModel : MapViewModel = viewModel()
-    val snackbarHostState = remember { mapViewModel.snackbarHostState }
+    //val snackbarHostState = remember { mapViewModel.snackbarHostState }
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()

@@ -11,5 +11,5 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun AboutScreen() {
-    Image(painter = painterResource(id = R.drawable.about_us_page), contentDescription =null, Modifier.absoluteOffset(0.dp, 5.dp))
+    Image(painter = painterResource(id = R.drawable.about_us_page), contentDescription =null, Modifier.absoluteOffset(10.dp, 5.dp))
 }
