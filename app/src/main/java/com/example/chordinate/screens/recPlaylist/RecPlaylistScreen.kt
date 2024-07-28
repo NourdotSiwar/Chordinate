@@ -1,72 +1,67 @@
-package com.example.chordinate.recplaylist
+package com.example.chordinate.screens.recPlaylist
 
-import RecPlaylistItem
-import android.app.Application
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import com.arcgismaps.mapping.view.LocationDisplay
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import com.example.chordinate.recplaylist.RecPlaylistViewModel
+import com.google.android.gms.location.FusedLocationProviderClient
 
 @Composable
-fun RecPlaylistScreen() {
-    val context = LocalContext.current
-    val recPlaylistViewModel = remember {
-        RecPlaylistViewModel(application = context.applicationContext as Application)
-    }
-    val songList by recPlaylistViewModel.songList.collectAsState()
-    val loadStatus by recPlaylistViewModel.loadStatus.collectAsState()
-    LaunchedEffect(Unit) {
-        recPlaylistViewModel.refreshLocalPlaylist()
-    }
+fun RecPlaylistScreen(fusedLocationClient: FusedLocationProviderClient) {
+    val recPlaylistViewModel: RecPlaylistViewModel = viewModel()
+    recPlaylistViewModel.setFusedLocationProvider(fusedLocationClient)
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        Text(text = loadStatus, style = MaterialTheme.typography.labelSmall)
+    val scrollState = rememberScrollState()
 
-        LazyColumn {
-            items(songList) { item ->
-                SongListItem(songItem = item, context = context)
+    OnLifecycleEvent { owner, event ->
+        when (event) {
+            Lifecycle.Event.ON_RESUME -> {
+                recPlaylistViewModel.refreshLocalPlaylist()
             }
+            else -> {}
         }
     }
+
+    Column(modifier=Modifier.verticalScroll(scrollState)) {
+        if (recPlaylistViewModel.loadStatus.value == RecPlaylistViewModel.PlaylistLoadStatus.LOADED) {
+            recPlaylistViewModel.songList.forEach {
+                RecPlaylistItem(it)
+            }
+        }
+        else {
+
+            Text (
+                text = recPlaylistViewModel.getLoadMessage()
+            )
+        }
+    }
+
 }
 
 @Composable
-fun SongListItem(songItem: RecPlaylistItem, context: Context) {
-    Row(modifier = Modifier.padding(8.dp)) {
-        // Replace with actual UI elements for displaying the item
-        Column(modifier = Modifier.weight(1f)) {
-            Text(text = songItem.track, style = MaterialTheme.typography.labelSmall)
-            Text(text = songItem.artist, style = MaterialTheme.typography.labelSmall)
-            Text(text = songItem.album, style = MaterialTheme.typography.labelSmall)
-            Text(text = "Count: ${songItem.count}", style = MaterialTheme.typography.labelSmall)
+fun OnLifecycleEvent(onEvent: (owner: LifecycleOwner, event: Lifecycle.Event) -> Unit) {
+    val eventHandler = rememberUpdatedState(onEvent)
+    val lifecycleOwner = rememberUpdatedState(LocalLifecycleOwner.current)
+
+    DisposableEffect(lifecycleOwner.value) {
+        val lifecycle = lifecycleOwner.value.lifecycle
+        val observer = LifecycleEventObserver { owner, event ->
+            eventHandler.value(owner, event)
         }
-        Spacer(modifier = Modifier.width(8.dp))
-        Button(onClick = {
-            val intent = Intent(
-                Intent.ACTION_VIEW,
-                Uri.parse("https://open.spotify.com/track/${songItem.track}")
-            )
-            context.startActivity(intent)
-        }) {
-            Text("Open in Spotify")
+
+        lifecycle.addObserver(observer)
+        onDispose {
+            lifecycle.removeObserver(observer)
         }
     }
 }

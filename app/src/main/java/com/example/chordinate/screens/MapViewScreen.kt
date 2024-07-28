@@ -4,20 +4,23 @@ package com.example.chordinate.screens
 import MyBroadcastReceiver
 import android.Manifest
 import android.app.Application
-import android.content.ContentValues.TAG
 import android.content.Context
 import android.content.pm.PackageManager
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.Button
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -29,8 +32,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -49,11 +53,7 @@ import kotlin.time.Duration.Companion.seconds
 
 // This file controls the UI/Layout
 @Composable
-fun MapViewScreen(
-    onAuthorizeClick: () -> Unit,
-    songInfo: String,
-    isLoggedIn: Boolean
-) {
+fun MapViewScreen() {
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -85,17 +85,41 @@ fun MapViewScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            MapView(
-                modifier = Modifier.weight(1f),
-                mapViewProxy = mapViewModel.mapViewProxy,
-                arcGISMap = mapViewModel.map,
-                onSingleTapConfirmed = mapViewModel::identify,
-                locationDisplay = locationDisplay,
-                content = {
-                    // Show a callout only when a lat/lon point is available.
-                    getCalloutContent(mapViewModel)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+            ) {
+                MapView(
+                    modifier = Modifier.fillMaxWidth(),
+                    mapViewProxy = mapViewModel.mapViewProxy,
+                    arcGISMap = mapViewModel.map,
+                    onSingleTapConfirmed = mapViewModel::identify,
+                    locationDisplay = locationDisplay,
+                    content = { getCalloutContent(mapViewModel) }
+                )
+                Row(
+                    modifier = Modifier.Companion
+                        .align(Alignment.BottomEnd)
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    FloatingActionButton(
+                        onClick = { recenter(locationDisplay) },
+                        modifier = Modifier.size(70.dp)
+                    )
+                    {
+                        Image(
+                            painter = painterResource(id = R.drawable.vinyl_option_2_orange),
+                            contentDescription = null,
+                            Modifier
+                                .scale(1.2f, 1.2f)
+                                .padding(top = 4.dp)
+                        )
+                    }
                 }
-            )
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -103,19 +127,6 @@ fun MapViewScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (isLoggedIn) {
-                    Text(text = "Logged in with Spotify")
-                } else {
-                    Button(onClick = onAuthorizeClick) {
-                        Text("Login with Spotify")
-                    }
-                }
-                Text(
-                    text = songInfo,
-                    color = if (songInfo.contains("Currently playing: ")) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.secondary,
-                    textAlign = TextAlign.Center
-                )
                 Button(onClick = {
                     addSongPointToWebMap(
                         coroutineScope,
@@ -132,7 +143,9 @@ fun MapViewScreen(
     }
 }
 
-
+fun recenter(locationDisplay: LocationDisplay) {
+    locationDisplay.setAutoPanMode(LocationDisplayAutoPanMode.Recenter)
+}
 
 private fun addSongPointToWebMap(
     coroutineScope: CoroutineScope,
@@ -150,6 +163,7 @@ private fun addSongPointToWebMap(
                 "Album" to info.albumName,
             )
 
+
             val featureTable = mapViewModel.serviceFeatureTable
             val mapLocation = locationDisplay.mapLocation
             if (mapLocation == null) {
@@ -166,60 +180,22 @@ private fun addSongPointToWebMap(
                     featureTable.applyEdits().onSuccess {
                         snackbarHostState.showSnackbar("Saving to map ...")
                         locationDisplay.setAutoPanMode(LocationDisplayAutoPanMode.Recenter)
-                        mapViewModel.mapViewProxy.setViewpointAnimated(
-                            Viewpoint(mapLocation), duration = 0.1.seconds
-                        ).onSuccess {
-                            val screenCoordinate = mapViewModel.mapViewProxy.locationToScreenOrNull(mapLocation)
-                            locationDisplay.showLocation = false
-
-                            if (screenCoordinate != null) {
-                                mapViewModel.mapViewProxy.identifyLayers(
-                                    screenCoordinate = screenCoordinate,
-                                    tolerance = 12.dp,
-                                    maximumResults = 1
-                                ).onSuccess { results ->
-                                    if (results.isNotEmpty()) {
-                                        results.first().geoElements.firstOrNull()
-                                            ?.let { observation ->
-                                                mapViewModel.selectedGeoElement = observation
-                                            }
-                                        // snackbarHostState.showSnackbar("application: $application")
-                                        mapViewModel.calloutContent = application.getString(
-                                            R.string.callout_text,
-                                            mapViewModel.selectedGeoElement?.attributes?.getOrDefault(
-                                                "Song",
-                                                "No song found"
-                                            ),
-                                            mapViewModel.selectedGeoElement?.attributes?.getOrDefault(
-                                                "Album",
-                                                "No album found"
-                                            ),
-                                            mapViewModel.selectedGeoElement?.attributes?.getOrDefault(
-                                                "Artist",
-                                                "No artist found"
-                                            )
-                                        )
-                                    }
-
-                                }.onFailure { error ->
-                                    snackbarHostState.showSnackbar(
-                                        "Error identifying results: ${error.message}. Cause:  ${error.cause}"
-                                    )
-                                    println("Error identifying results: ${error.message}. Cause:  ${error.cause}")
-                                }
-                            }
-                        }.onFailure { e ->
-                            snackbarHostState.showSnackbar("Error applying edits: ${e.message} ${e.cause}")
+                        locationDisplay.showLocation = false
+                        featureTable.loadOrRefreshFeatures(listOf(feature)).onSuccess {
+                            println("Table has been refereshed")
                         }
-                    }
 
-                }.onFailure {
-                    // Handle failure to add the feature
-                    Log.d(TAG, "Failed to add feature: ${it.cause}")
+                        mapViewModel.mapViewProxy.setViewpointAnimated(
+                            Viewpoint(mapLocation.extent.center),
+                            duration = 0.5.seconds
+                        )
+                    }.onFailure { error ->
+                        snackbarHostState.showSnackbar(
+                            "Error identifying results: ${error.message}. Cause:  ${error.cause}"
+                        )
+                        println("Error identifying results: ${error.message}. Cause:  ${error.cause}")
+                    }
                 }
-            }.onFailure {
-                // Handle failure to load the feature table
-                Log.d(TAG, "Failed to load feature table: ${it.message}")
             }
         }
     }
@@ -250,8 +226,6 @@ private fun MapViewScope.getCalloutContent(mapViewModel: MapViewModel) {
     }
 }
 
-
-
 @Composable
 fun RequestPermissions(onPermissionsGranted: () -> Unit) {
     // Create an activity result launcher using permissions contract and handle the result.
@@ -278,8 +252,6 @@ fun RequestPermissions(onPermissionsGranted: () -> Unit) {
 }
 
 fun checkPermissions(context: Context): Boolean {
-    // Check permissions to see if both permissions are granted.
-    // Coarse location permission.
     val permissionCheckCoarseLocation = ContextCompat.checkSelfPermission(
         context,
         Manifest.permission.ACCESS_COARSE_LOCATION
