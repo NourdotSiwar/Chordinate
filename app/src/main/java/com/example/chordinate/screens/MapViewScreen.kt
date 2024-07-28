@@ -2,14 +2,9 @@ package com.example.chordinate.screens
 
 
 import MyBroadcastReceiver
-import android.Manifest
 import android.app.Application
 import android.content.ContentValues.TAG
-import android.content.Context
-import android.content.pm.PackageManager
 import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,7 +19,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -32,14 +26,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.arcgismaps.location.LocationDisplayAutoPanMode
 import com.arcgismaps.mapping.Viewpoint
 import com.arcgismaps.mapping.view.LocationDisplay
 import com.arcgismaps.toolkit.geoviewcompose.MapView
 import com.arcgismaps.toolkit.geoviewcompose.MapViewScope
-import com.arcgismaps.toolkit.geoviewcompose.rememberLocationDisplay
 import com.arcgismaps.toolkit.geoviewcompose.theme.CalloutDefaults
 import com.example.chordinate.R
 import com.example.chordinate.viewmodel.MapViewModel
@@ -49,29 +41,18 @@ import kotlin.time.Duration.Companion.seconds
 
 // This file controls the UI/Layout
 @Composable
-fun MapViewScreen(onAuthorizeClick: () -> Unit, songInfo: String, isLoggedIn: Boolean) {
+fun MapViewScreen(
+    onAuthorizeClick: () -> Unit,
+    songInfo: String,
+    isLoggedIn: Boolean,
+    locationDisplay: LocationDisplay
+) {
 
-    val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    // Create and remember a location display with a recenter auto pan mode.
-    val locationDisplay = rememberLocationDisplay()
     val mapViewModel: MapViewModel = viewModel()
     val snackbarHostState = remember { mapViewModel.snackbarHostState }
     val application = LocalContext.current.applicationContext as Application
-    if (checkPermissions(context)) {
-        // Permissions are already granted.
-        LaunchedEffect(Unit) {
-            locationDisplay.dataSource.start()
-        }
-    } else {
-        RequestPermissions(
-            onPermissionsGranted = {
-                coroutineScope.launch {
-                    locationDisplay.dataSource.start()
-                }
-            }
-        )
-    }
+
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
     ) { innerPadding ->
@@ -243,45 +224,4 @@ private fun MapViewScope.getCalloutContent(mapViewModel: MapViewModel) {
             )
         }
     }
-}
-
-@Composable
-fun RequestPermissions(onPermissionsGranted: () -> Unit) {
-    // Create an activity result launcher using permissions contract and handle the result.
-    val activityResultLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        // Check if both fine & coarse location permissions are true.
-        if (permissions.all { it.value }) {
-            onPermissionsGranted()
-        } else {
-            println("Location permissions were denied")
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        activityResultLauncher.launch(
-            // Request both fine and coarse location permissions.
-            arrayOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-        )
-    }
-}
-
-fun checkPermissions(context: Context): Boolean {
-    // Check permissions to see if both permissions are granted.
-    // Coarse location permission.
-    val permissionCheckCoarseLocation = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.ACCESS_COARSE_LOCATION
-    ) == PackageManager.PERMISSION_GRANTED
-    // Fine location permission.
-    val permissionCheckFineLocation = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.ACCESS_FINE_LOCATION
-    ) == PackageManager.PERMISSION_GRANTED
-
-    return permissionCheckCoarseLocation && permissionCheckFineLocation
 }

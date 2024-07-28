@@ -8,9 +8,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.arcgismaps.mapping.view.LocationDisplay
+import com.example.chordinate.recplaylist.RecPlaylistScreen
 import com.example.chordinate.screens.AboutScreen
 import com.example.chordinate.screens.MapViewScreen
-import com.example.chordinate.screens.RecPLaylistScreen
 
 @Composable
 fun Navigation(
@@ -18,7 +19,8 @@ fun Navigation(
     songInfo: String,
     isLoggedIn: Boolean,
     navController: NavHostController = rememberNavController(),
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    locationDisplay: LocationDisplay
 ) {
     NavHost(
         navController = navController,
@@ -29,11 +31,12 @@ fun Navigation(
             MapViewScreen(
                 onAuthorizeClick = onAuthorizeClick,
                 songInfo = songInfo,
-                isLoggedIn = isLoggedIn
+                isLoggedIn = isLoggedIn,
+                locationDisplay = locationDisplay
             )
         }
         composable(Screens.RecPlaylist.screen) {
-            RecPLaylistScreen()
+            RecPlaylistScreen(locationDisplay)
         }
         composable(Screens.About.screen) {
             AboutScreen()
