@@ -1,6 +1,9 @@
 package com.example.chordinate
 
+
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -11,15 +14,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.arcgismaps.ArcGISEnvironment
 import androidx.navigation.compose.rememberNavController
-
-
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.absoluteOffset
-import androidx.compose.ui.res.painterResource
+import com.arcgismaps.ArcGISEnvironment
 import com.example.chordinate.navigation.BottomBar
 import com.example.chordinate.navigation.BottomNavItem
 import com.example.chordinate.navigation.Navigation
@@ -43,9 +42,13 @@ fun MainScreen(
 
     val navController = rememberNavController()
     val bottomNavItems = listOf(
-        BottomNavItem(Screens.MapView.screen, Screens.MapView.icon, Screens.MapView.name ),
-        BottomNavItem(Screens.RecPlaylist.screen, Screens.RecPlaylist.icon, Screens.RecPlaylist.name ),
-        BottomNavItem(Screens.About.screen, Screens.About.icon, Screens.About.name ),
+        BottomNavItem(Screens.MapView.screen, Screens.MapView.icon, Screens.MapView.name),
+        BottomNavItem(
+            Screens.RecPlaylist.screen,
+            Screens.RecPlaylist.icon,
+            Screens.RecPlaylist.name
+        ),
+        BottomNavItem(Screens.About.screen, Screens.About.icon, Screens.About.name),
     )
 
     Scaffold(
@@ -53,7 +56,7 @@ fun MainScreen(
         //If you can change the padding maybe?  Or the size of the icon to make it appear as a banner....  right now it's so small
         topBar = {
             Column {
-             getTopAppBar()
+                getTopAppBar()
             }
         },
 

@@ -9,16 +9,16 @@ class MyBroadcastReceiver : BroadcastReceiver() {
 
 
     object BroadcastTypes {
-        const val SPOTIFY_PACKAGE: String = "com.spotify.music"
-        const val PLAYBACK_STATE_CHANGED: String = SPOTIFY_PACKAGE + ".playbackstatechanged"
-        const val QUEUE_CHANGED: String = SPOTIFY_PACKAGE + ".queuechanged"
-        const val METADATA_CHANGED: String = SPOTIFY_PACKAGE + ".metadatachanged"
+        private const val SPOTIFY_PACKAGE: String = "com.spotify.music"
+        const val PLAYBACK_STATE_CHANGED: String = "$SPOTIFY_PACKAGE.playbackstatechanged"
+        const val QUEUE_CHANGED: String = "$SPOTIFY_PACKAGE.queuechanged"
+        const val METADATA_CHANGED: String = "$SPOTIFY_PACKAGE.metadatachanged"
     }
 
     object SharedData {
         var artistName: String? = null
         var trackId: String? = null
-        var albumName: String? =null
+        var albumName: String? = null
         var trackName: String? = null
         // Other data fields as needed
     }
@@ -37,7 +37,10 @@ class MyBroadcastReceiver : BroadcastReceiver() {
             SharedData.trackId = intent.getStringExtra("id")
             SharedData.albumName = intent.getStringExtra("album")
             SharedData.trackName = intent.getStringExtra("track")
-            Log.d(TAG, "Playback state Change: ${SharedData.artistName} made ${SharedData.trackName}")
+            Log.d(
+                TAG,
+                "Playback state Change: ${SharedData.artistName} made ${SharedData.trackName}"
+            )
 
         } else if (intent.action.equals(BroadcastTypes.QUEUE_CHANGED)) {
             // Sent only as a notification, your app may want to respond accordingly.
