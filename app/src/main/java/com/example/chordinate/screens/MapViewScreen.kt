@@ -145,6 +145,7 @@ fun MapViewScreen() {
 
 fun recenter(locationDisplay: LocationDisplay) {
     locationDisplay.setAutoPanMode(LocationDisplayAutoPanMode.Recenter)
+    locationDisplay.showLocation = true
 }
 
 private fun addSongPointToWebMap(
