@@ -17,17 +17,17 @@ import com.example.chordinate.recplaylist.RecPlaylistScreen
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun Navigation(onAuthorizeClick: () -> Unit, onMapRecenterClick: KFunction1<LocationDisplay, Unit>, songInfo: String, isLoggedIn: Boolean, navController: NavHostController = rememberNavController(), paddingValues: PaddingValues) {
+fun Navigation(navController: NavHostController = rememberNavController(), paddingValues: PaddingValues, locationDisplay: LocationDisplay) {
     NavHost(
         navController = navController,
         startDestination = Screens.MapScreen.screen,
         modifier = Modifier.padding(paddingValues)
     ) {
         composable(Screens.MapScreen.screen) {
-            MapViewScreen()
+            MapViewScreen(locationDisplay)
         }
         composable(Screens.RecPlaylist.screen) {
-            RecPlaylistScreen()
+            RecPlaylistScreen(locationDisplay)
         }
         composable(Screens.About.screen) {
             AboutScreen()

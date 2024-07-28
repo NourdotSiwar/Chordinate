@@ -69,7 +69,7 @@ import kotlin.reflect.KFunction1
 // This file controls the UI/Layout
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(onAuthorizeClick: () -> Unit, onMapRecenterClick: KFunction1<LocationDisplay, Unit>, songInfo: String, isLoggedIn: Boolean, navController: NavHostController = rememberNavController()) {
+fun MainScreen(onAuthorizeClick: () -> Unit, onMapRecenterClick: KFunction1<LocationDisplay, Unit>, songInfo: String, isLoggedIn: Boolean) {
 
     val mapViewModel: MapViewModel = viewModel()
     val snackbarHostState = remember { mapViewModel.snackbarHostState }
@@ -133,7 +133,7 @@ fun MainScreen(onAuthorizeClick: () -> Unit, onMapRecenterClick: KFunction1<Loca
 
         bottomBar = { BottomBar(navController = navController, items = bottomNavItems) }
         ) { innerPadding ->
-            Navigation(onAuthorizeClick, onMapRecenterClick, songInfo, isLoggedIn, navController, innerPadding)
+            Navigation(navController, innerPadding, locationDisplay)
             }
 }
 

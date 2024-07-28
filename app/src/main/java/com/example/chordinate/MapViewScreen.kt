@@ -9,20 +9,27 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.arcgismaps.location.LocationDisplayAutoPanMode
 import com.arcgismaps.mapping.view.LocationDisplay
 import com.arcgismaps.toolkit.geoviewcompose.MapView
+import com.arcgismaps.toolkit.geoviewcompose.rememberLocationDisplay
 import com.arcgismaps.toolkit.geoviewcompose.theme.CalloutDefaults
+import kotlinx.coroutines.launch
 import kotlin.reflect.KFunction1
 
 
 @Composable
-fun MapViewScreen() {
+fun MapViewScreen(locationDisplay: LocationDisplay) {
     val mapViewModel : MapViewModel = viewModel()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -32,7 +39,7 @@ fun MapViewScreen() {
             mapViewProxy = mapViewModel.mapViewProxy,
             arcGISMap = mapViewModel.map,
             onSingleTapConfirmed = mapViewModel::identify,
-            //locationDisplay = locationDisplay,
+            locationDisplay = locationDisplay,
             content = {
                 // Show a callout only when a lat/lon point is available.
                 mapViewModel.selectedGeoElement?.let { geoElement ->
