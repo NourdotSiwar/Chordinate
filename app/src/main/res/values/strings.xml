@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">Chordinate</string>
-    <string name="callout_text">"Song: %s\nAlbum: %s"</string>
+    <string name="callout_text">"Song: %s\nAlbum: %s\nArtist: %s"</string>
 </resources>
