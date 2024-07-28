@@ -1,6 +1,5 @@
 package com.example.chordinate
 
-import MyBroadcastReceiver
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.IntentFilter
@@ -34,16 +33,18 @@ import java.io.IOException
 
 //This file servers as main entry of program
 
-
 class MainActivity : ComponentActivity() {
 
     // Launcher to handle the Spotify authentication result
     private lateinit var spotifyAuthLauncher: ActivityResultLauncher<Intent>
     private var songInfo by mutableStateOf("No song info")
     private var isLoggedIn by mutableStateOf(false)
+
     private lateinit var spotifyReciever: MyBroadcastReceiver
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         broadcastSetup()
         setApiKey()
 
@@ -103,14 +104,13 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 Surface {
                     MainScreen(
-                        onAuthorizeClick = ::authorizeWithSpotify,
-                        songInfo = songInfo,
-                        isLoggedIn = isLoggedIn,
+                        onAuthorizeClick = ::authorizeWithSpotify, songInfo = songInfo, isLoggedIn = isLoggedIn
                     )
                 }
             }
         }
     }
+
     private fun saveAccessToken(accessToken: String) {
         getSharedPreferences("SpotifyAuth", MODE_PRIVATE).edit().putString("ACCESS_TOKEN", accessToken).apply()
     }
@@ -124,6 +124,8 @@ class MainActivity : ComponentActivity() {
             ApiKey.create("AAPK22bba5d8eb024b63b166b5e260536d7bnBKbDuc1HGVEPAjQ1NVHY6hUhEoLHMAD_ELwR75UqgYtgIf6S4GJe9umAXaOV6os")
     }
 
+
+    // Initiates Spotify authorization process
     private fun authorizeWithSpotify() {
         Log.d(TAG, "authorizeWithSpotify: Starting Spotify authorization")
         val builder = AuthorizationRequest.Builder(
@@ -195,6 +197,7 @@ class MainActivity : ComponentActivity() {
         })
     }
 
+
     private fun broadcastSetup() {
         spotifyReciever = MyBroadcastReceiver()
         val spotifyFilter = IntentFilter("com.spotify.music.playbackstatechanged")
@@ -211,4 +214,5 @@ class MainActivity : ComponentActivity() {
         const val REDIRECT_URI = "myapp://callback"
     }
 }
+
 
