@@ -1,12 +1,18 @@
 package com.example.chordinate
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.absoluteOffset
+import androidx.compose.foundation.layout.absolutePadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -18,6 +24,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -98,6 +105,11 @@ fun MapViewScreen() {
                                     style = MaterialTheme.typography.labelSmall
                                 )
                             }
+
+                        }
+                        Button(onClick = { donothing() }, modifier=Modifier.size(100.dp).offset(10.dp, 10.dp).padding(0.dp).absolutePadding(0.dp,0.dp,0.dp,0.dp))
+                        {
+                            Image(painter = painterResource(id = R.drawable.vinyl_option_2_orange_2), contentDescription =null, Modifier.size(1000.dp).padding(0.dp).fillMaxWidth().fillMaxSize().absolutePadding(0.dp,0.dp,0.dp,0.dp))
                         }
                     }
                 )
@@ -121,3 +133,5 @@ fun MapViewScreen() {
             }
         //}
 }
+
+
