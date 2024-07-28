@@ -211,8 +211,3 @@ fun checkPermissions(context: Context): Boolean {
 fun showError(context: Context, message: String) {
     Toast.makeText(context, message, Toast.LENGTH_LONG).show()
 }
-
-fun donothing()
-{
-
-}
