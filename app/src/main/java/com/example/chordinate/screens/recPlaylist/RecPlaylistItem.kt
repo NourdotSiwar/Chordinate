@@ -30,8 +30,7 @@ fun RecPlaylistItem(songItem: RecPlaylistViewModel.SongInfoCount) {
         Spacer(modifier = Modifier.width(8.dp))
         Button(onClick = {
             // Use Spotify URI scheme
-            val uri =
-                "spotify:track:${songItem.songInfo.song_id}" // Make sure to have the correct field in RecPlaylistItem
+            val uri = songItem.getUri() // Make sure to have the correct field in RecPlaylistItem
             val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
             context.startActivity(intent)
         }) {
