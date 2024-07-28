@@ -4,6 +4,7 @@ package com.example.chordinate
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -28,16 +29,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import com.arcgismaps.ArcGISEnvironment
 import com.arcgismaps.toolkit.geoviewcompose.rememberLocationDisplay
-import com.example.chordinate.R
 import com.example.chordinate.navigation.BottomBar
 import com.example.chordinate.navigation.BottomNavItem
 import com.example.chordinate.navigation.Navigation
 import com.example.chordinate.navigation.Screens
 import com.example.chordinate.viewmodel.MapViewModel
 import kotlinx.coroutines.launch
-import com.example.uceyecomposeversion.ui.components.BottomBar
 import com.google.android.gms.location.FusedLocationProviderClient
-import kotlin.reflect.KFunction1
 
 // This file controls the UI/Layout
 @Composable
@@ -72,7 +70,6 @@ fun MainScreen(
             locationDisplay.dataSource.start()
         }
     } else {
-
         RequestPermissions(
             context = context,
             onPermissionsGranted = {
@@ -82,17 +79,6 @@ fun MainScreen(
             }
         )
     }
-
-    val navController = rememberNavController()
-    val bottomNavItems = listOf(
-        BottomNavItem(Screens.MapScreen.screen, Screens.MapScreen.icon, Screens.MapScreen.name ),
-        BottomNavItem(Screens.RecPlaylist.screen, Screens.RecPlaylist.icon, Screens.RecPlaylist.name ),
-        BottomNavItem(Screens.About.screen, Screens.About.icon, Screens.About.name ),
-        )
-
-    val topNavItems = listOf(
-        BottomNavItem(Screens.MapScreen.screen, R.drawable.chordinate_one_line, Screens.MapScreen.name)
-    )
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -108,7 +94,8 @@ fun MainScreen(
         Navigation(
             onAuthorizeClick,
             songInfo, isLoggedIn, navController,
-            innerPadding, locationDisplay
+            innerPadding, locationDisplay,
+            fusedLocationClient
         )
     }
 }
@@ -135,7 +122,7 @@ private fun getTopAppBar() {
 
 
 @Composable
-fun RequestPermissions(onPermissionsGranted: () -> Unit) {
+fun RequestPermissions(context: Context, onPermissionsGranted: () -> Unit) {
     // Create an activity result launcher using permissions contract and handle the result.
     val activityResultLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()

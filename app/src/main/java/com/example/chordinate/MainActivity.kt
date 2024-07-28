@@ -1,5 +1,6 @@
 package com.example.chordinate
 
+import MyBroadcastReceiver
 import android.content.ContentValues.TAG
 import android.content.Intent
 import android.content.IntentFilter
@@ -18,7 +19,6 @@ import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import com.arcgismaps.ApiKey
 import com.arcgismaps.ArcGISEnvironment
-import com.example.chordinate.screens.MainScreen
 import com.spotify.sdk.android.auth.AuthorizationClient
 import com.spotify.sdk.android.auth.AuthorizationRequest
 import com.spotify.sdk.android.auth.AuthorizationResponse
@@ -30,7 +30,6 @@ import okhttp3.Response
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
-import com.example.chordinate.ui.theme.AppTheme
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 
@@ -44,7 +43,6 @@ class MainActivity : ComponentActivity() {
     private var isLoggedIn by mutableStateOf(false)
 
     private lateinit var spotifyReciever: MyBroadcastReceiver
-
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
@@ -112,8 +110,8 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 Surface {
                     MainScreen(
-                        onAuthorizeClick = ::authorizeWithSpotify, songInfo = songInfo, isLoggedIn = isLoggedIn
-                        onMapRecenterClick = ::recenterMap, fusedLocationClient = fusedLocationClient
+                        onAuthorizeClick = ::authorizeWithSpotify, songInfo = songInfo, isLoggedIn = isLoggedIn,
+                        fusedLocationClient = fusedLocationClient
                     )
                 }
             }
