@@ -2,24 +2,34 @@ package com.example.chordinate.recplaylist
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Button
 import androidx.compose.runtime.Composable
 import androidx.compose.material3.Text
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 
 @Composable
-fun RecPlaylistItem(songInfo: RecPlaylistViewModel.SongInfo) {
+fun RecPlaylistItem(songInfoCount: RecPlaylistViewModel.SongInfoCount) {
+    val uriHandler = LocalUriHandler.current
+
     Column {
         Text (
-            text = songInfo.name,
+            text = "Track: ${songInfoCount.songInfo.name}",
         )
         Text (
-            text = songInfo.artist,
+            text = "Artist: ${songInfoCount.songInfo.artist}",
         )
         Text (
-            text = songInfo.album,
+            text = "Album: ${songInfoCount.songInfo.album}",
         )
         Text (
-            text = songInfo.song_id,
+            text = "Count: ${songInfoCount.count}",
         )
+        Button (onClick = {
+            uriHandler.openUri(songInfoCount.getUri())
+        }) {
+            Text("Open in Spotify")
+        }
+
     }
 }

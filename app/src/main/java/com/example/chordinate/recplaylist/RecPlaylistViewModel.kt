@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 class RecPlaylistViewModel(private val application: Application) : AndroidViewModel(application) {
     private var serviceTable: ServiceFeatureTable = createServiceTable()
 
-    var songList = mutableStateListOf<SongInfo>()
+    var songList = mutableStateListOf<SongInfoCount>()
     var loadStatus = mutableStateOf("Starting...")
 
     private val _locationDisplayState = MutableStateFlow<LocationDisplay?>(null)
@@ -50,7 +50,7 @@ class RecPlaylistViewModel(private val application: Application) : AndroidViewMo
 
 
     public fun refreshLocalPlaylist(
-        radius: Double = 1000.0
+        radius: Double = 10000.0
     ) {
         viewModelScope.launch {
             if (locationDisplay==null || locationDisplay?.mapLocation==null) {
@@ -78,7 +78,7 @@ class RecPlaylistViewModel(private val application: Application) : AndroidViewMo
     private suspend fun doRefreshPlaylist(center: Point, radius: Double) {
         loadStatus.value = "Loading..."
 
-        val allSongsList = ArrayList<SongInfo>()
+        var allSongsList: ArrayList<SongInfoCount>
 
         val areaBuffer = GeometryEngine.bufferGeodeticOrNull(
             center,
@@ -94,29 +94,55 @@ class RecPlaylistViewModel(private val application: Application) : AndroidViewMo
             queryParams.spatialRelationship = SpatialRelationship.Contains
 
             serviceTable.queryFeatures(queryParams, QueryFeatureFields.LoadAll).onSuccess { queryResult ->
-                Log.d("Local playlist query", queryResult.toString())
+                val songInfoCounts = HashMap<String, SongInfoCount>()
+
                 for (feature in queryResult) {
-                    val songInfo = SongInfo(
-                        name = feature.attributes.getOrDefault("Song", "") as String,
-                        artist = feature.attributes.getOrDefault(
-                            "Album_Playlist",
-                            ""
-                        ) as String,
-                        album = feature.attributes.getOrDefault("Album", "") as String,
-                        song_id = feature.attributes.getOrDefault("SpotifyURI", "") as String,
-                    )
-                    allSongsList.add(songInfo)
-                }
+                    val songId = feature.attributes.getOrDefault("Spotify_URI", "") as String
 
-                songList.clear()
-                songList.addAll(allSongsList)
+                    if (songId=="")
+                        continue
 
-                if (songList.isEmpty()) {
-                    loadStatus.value = "No songs found. Try increasing the search radius."
+                    if (songInfoCounts.containsKey(songId)) {
+                        songInfoCounts[songId]!!.count++
+                    }
+                    else {
+                        val songInfo = SongInfo(
+                            name = feature.attributes.getOrDefault("Song", "") as String,
+                            artist = feature.attributes.getOrDefault("Artist", "") as String,
+                            album = feature.attributes.getOrDefault("Album", "") as String,
+                            song_id = feature.attributes.getOrDefault("Spotify_URI", "") as String,
+                        )
+
+                        songInfoCounts[songId] = SongInfoCount(songInfo)
+                    }
+
+                    allSongsList = ArrayList(songInfoCounts.values)
+                    allSongsList.sortBy { item ->
+                        -item.count
+                    }
+
+                    songList.clear()
+                    songList.addAll(allSongsList)
+
+                    if (songList.isEmpty()) {
+                        loadStatus.value = "No songs found. Try increasing the search radius."
+                    }
                 }
             }
         }
     }
 
     data class SongInfo(val name: String, val artist: String, val album: String, val song_id: String)
+    class SongInfoCount(songInfo: SongInfo, count: Int = 1) {
+        val songInfo = songInfo
+        var count = count
+
+        companion object {
+            const val SPOTIFY_TRACK_URI = "https://open.spotify.com/track/"
+        }
+
+        fun getUri(): String {
+            return SPOTIFY_TRACK_URI+songInfo.song_id
+        }
+    }
 }
