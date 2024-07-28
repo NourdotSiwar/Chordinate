@@ -14,10 +14,11 @@ import kotlin.reflect.KFunction1
 import com.example.chordinate.MapViewScreen
 import com.example.chordinate.AboutScreen
 import com.example.chordinate.recplaylist.RecPlaylistScreen
+import com.google.android.gms.location.FusedLocationProviderClient
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun Navigation(navController: NavHostController = rememberNavController(), paddingValues: PaddingValues, locationDisplay: LocationDisplay) {
+fun Navigation(navController: NavHostController = rememberNavController(), paddingValues: PaddingValues, locationDisplay: LocationDisplay, fusedLocationCLient: FusedLocationProviderClient) {
     NavHost(
         navController = navController,
         startDestination = Screens.MapScreen.screen,
@@ -27,7 +28,7 @@ fun Navigation(navController: NavHostController = rememberNavController(), paddi
             MapViewScreen(locationDisplay)
         }
         composable(Screens.RecPlaylist.screen) {
-            RecPlaylistScreen(locationDisplay)
+            RecPlaylistScreen(fusedLocationCLient)
         }
         composable(Screens.About.screen) {
             AboutScreen()

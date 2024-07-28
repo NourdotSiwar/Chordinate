@@ -64,12 +64,13 @@ import com.example.chordinate.navigation.BottomNavItem
 import com.example.chordinate.navigation.Navigation
 import com.example.chordinate.navigation.Screens
 import com.example.uceyecomposeversion.ui.components.BottomBar
+import com.google.android.gms.location.FusedLocationProviderClient
 import kotlin.reflect.KFunction1
 
 // This file controls the UI/Layout
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(onAuthorizeClick: () -> Unit, onMapRecenterClick: KFunction1<LocationDisplay, Unit>, songInfo: String, isLoggedIn: Boolean) {
+fun MainScreen(onAuthorizeClick: () -> Unit, onMapRecenterClick: KFunction1<LocationDisplay, Unit>, songInfo: String, isLoggedIn: Boolean, fusedLocationClient: FusedLocationProviderClient) {
 
     val mapViewModel: MapViewModel = viewModel()
     val snackbarHostState = remember { mapViewModel.snackbarHostState }
@@ -133,7 +134,7 @@ fun MainScreen(onAuthorizeClick: () -> Unit, onMapRecenterClick: KFunction1<Loca
 
         bottomBar = { BottomBar(navController = navController, items = bottomNavItems) }
         ) { innerPadding ->
-            Navigation(navController, innerPadding, locationDisplay)
+            Navigation(navController, innerPadding, locationDisplay, fusedLocationClient)
             }
 }
 

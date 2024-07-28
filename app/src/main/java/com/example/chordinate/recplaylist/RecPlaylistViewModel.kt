@@ -1,9 +1,13 @@
 package com.example.chordinate.recplaylist
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Application
-import android.util.Log
+import android.content.pm.PackageManager
+import android.location.Location
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.core.app.ActivityCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.arcgismaps.data.QueryFeatureFields
@@ -14,32 +18,24 @@ import com.arcgismaps.geometry.GeodeticCurveType
 import com.arcgismaps.geometry.GeometryEngine
 import com.arcgismaps.geometry.LinearUnit
 import com.arcgismaps.geometry.Point
-import com.arcgismaps.mapping.view.LocationDisplay
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
+import com.arcgismaps.geometry.SpatialReference
+import com.google.android.gms.location.FusedLocationProviderClient
 import kotlinx.coroutines.launch
+import org.locationtech.proj4j.CRSFactory
+import org.locationtech.proj4j.CoordinateTransformFactory
+import org.locationtech.proj4j.ProjCoordinate
 
 
 class RecPlaylistViewModel(private val application: Application) : AndroidViewModel(application) {
     private var serviceTable: ServiceFeatureTable = createServiceTable()
 
     var songList = mutableStateListOf<SongInfoCount>()
-    var loadStatus = mutableStateOf("Starting...")
+    var loadStatus = mutableStateOf(PlaylistLoadStatus.STARTING)
 
-    private val _locationDisplayState = MutableStateFlow<LocationDisplay?>(null)
-    val locationDisplayState: StateFlow<LocationDisplay?> = _locationDisplayState
+    var fusedLocationClient: FusedLocationProviderClient? = null
 
-    fun updateLocationDisplay(locationDisplay: LocationDisplay) {
-        _locationDisplayState.value = locationDisplay
-    }
-
-    private var locationDisplay: LocationDisplay? = null
-
-    init {
-    }
-
-    public fun setLocationDisplay(locationDisplay: LocationDisplay) {
-        this.locationDisplay = locationDisplay
+    fun setFusedLocationProvider(fusedLocationClient: FusedLocationProviderClient) {
+        this.fusedLocationClient = fusedLocationClient
     }
 
     private fun createServiceTable(): ServiceFeatureTable {
@@ -49,19 +45,49 @@ class RecPlaylistViewModel(private val application: Application) : AndroidViewMo
     }
 
 
+    @SuppressLint("MissingPermission")
     public fun refreshLocalPlaylist(
         radius: Double = 10000.0
     ) {
-        viewModelScope.launch {
-            if (locationDisplay==null || locationDisplay?.mapLocation==null) {
-                loadStatus.value = "Location not found."
-            } else if (locationDisplay?.mapLocation!!.x==0.0 && locationDisplay?.mapLocation!!.y==0.0) {
-                loadStatus.value = "Location not yet plotted. Please open the map and wait for the blue dot to load."
-            } else {
-                Log.d("MyLocation", "${locationDisplay?.mapLocation!!.x}, ${locationDisplay?.mapLocation}")
-                doRefreshPlaylist(locationDisplay?.mapLocation!!, radius)
+        if (fusedLocationClient == null) {
+            loadStatus.value = PlaylistLoadStatus.NO_LOCATION_PROVIDER
+        }
+        else if (!checkLocationPermissions()) {
+            loadStatus.value = PlaylistLoadStatus.NO_PERMISSIONS
+        } else {
+            fusedLocationClient!!.lastLocation.addOnSuccessListener { location: Location? ->
+                viewModelScope.launch {
+                    location?.let { loc: Location ->
+                        var point = projectWgs(loc.longitude, loc.latitude)
+                        doRefreshPlaylist(point, radius)
+                    }
+                }
             }
         }
+    }
+
+    private fun checkLocationPermissions(): Boolean {
+        return ActivityCompat.checkSelfPermission(
+            application,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+            application,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun projectWgs(lon: Double, lat: Double): Point {
+        val crsFactory = CRSFactory()
+        val WGS84 = crsFactory.createFromName("epsg:4326")
+        val WgsWebMerc = crsFactory.createFromName("epsg:3857")
+
+        val ctFactory = CoordinateTransformFactory()
+        val wgsToWgsWebMerc = ctFactory.createTransform(WGS84, WgsWebMerc)
+
+        val result = ProjCoordinate()
+        wgsToWgsWebMerc.transform(ProjCoordinate(lon, lat), result)
+
+        return Point(result.x, result.y, SpatialReference(3857))
     }
 
 
@@ -76,7 +102,7 @@ class RecPlaylistViewModel(private val application: Application) : AndroidViewMo
 
 
     private suspend fun doRefreshPlaylist(center: Point, radius: Double) {
-        loadStatus.value = "Loading..."
+        loadStatus.value = PlaylistLoadStatus.LOADING
 
         var allSongsList: ArrayList<SongInfoCount>
 
@@ -93,46 +119,55 @@ class RecPlaylistViewModel(private val application: Application) : AndroidViewMo
             queryParams.geometry = areaBuffer
             queryParams.spatialRelationship = SpatialRelationship.Contains
 
-            serviceTable.queryFeatures(queryParams, QueryFeatureFields.LoadAll).onSuccess { queryResult ->
-                val songInfoCounts = HashMap<String, SongInfoCount>()
+            serviceTable.queryFeatures(queryParams, QueryFeatureFields.LoadAll)
+                .onSuccess { queryResult ->
+                    val songInfoCounts = HashMap<String, SongInfoCount>()
 
-                for (feature in queryResult) {
-                    val songId = feature.attributes.getOrDefault("Spotify_URI", "") as String
+                    for (feature in queryResult) {
+                        val songId = feature.attributes.getOrDefault("Spotify_URI", "") as String
 
-                    if (songId=="")
-                        continue
+                        if (songId == "")
+                            continue
 
-                    if (songInfoCounts.containsKey(songId)) {
-                        songInfoCounts[songId]!!.count++
-                    }
-                    else {
-                        val songInfo = SongInfo(
-                            name = feature.attributes.getOrDefault("Song", "") as String,
-                            artist = feature.attributes.getOrDefault("Artist", "") as String,
-                            album = feature.attributes.getOrDefault("Album", "") as String,
-                            song_id = feature.attributes.getOrDefault("Spotify_URI", "") as String,
-                        )
+                        if (songInfoCounts.containsKey(songId)) {
+                            songInfoCounts[songId]!!.count++
+                        } else {
+                            val songInfo = SongInfo(
+                                name = feature.attributes.getOrDefault("Song", "") as String,
+                                artist = feature.attributes.getOrDefault("Artist", "") as String,
+                                album = feature.attributes.getOrDefault("Album", "") as String,
+                                song_id = feature.attributes.getOrDefault("Spotify_URI", "") as String,
+                            )
 
-                        songInfoCounts[songId] = SongInfoCount(songInfo)
-                    }
+                            songInfoCounts[songId] = SongInfoCount(songInfo)
+                        }
 
-                    allSongsList = ArrayList(songInfoCounts.values)
-                    allSongsList.sortBy { item ->
-                        -item.count
-                    }
+                        allSongsList = ArrayList(songInfoCounts.values)
+                        allSongsList.sortBy { item ->
+                            -item.count
+                        }
 
-                    songList.clear()
-                    songList.addAll(allSongsList)
+                        songList.clear()
+                        songList.addAll(allSongsList)
 
-                    if (songList.isEmpty()) {
-                        loadStatus.value = "No songs found. Try increasing the search radius."
+                        if (songList.isEmpty()) {
+                            loadStatus.value = PlaylistLoadStatus.EMPTY
+                        }
+                        else {
+                            loadStatus.value = PlaylistLoadStatus.LOADED
+                        }
                     }
                 }
-            }
         }
     }
 
-    data class SongInfo(val name: String, val artist: String, val album: String, val song_id: String)
+    data class SongInfo(
+        val name: String,
+        val artist: String,
+        val album: String,
+        val song_id: String
+    )
+
     class SongInfoCount(songInfo: SongInfo, count: Int = 1) {
         val songInfo = songInfo
         var count = count
@@ -142,7 +177,28 @@ class RecPlaylistViewModel(private val application: Application) : AndroidViewMo
         }
 
         fun getUri(): String {
-            return SPOTIFY_TRACK_URI+songInfo.song_id
+            return SPOTIFY_TRACK_URI + songInfo.song_id
+        }
+    }
+
+
+    enum class PlaylistLoadStatus {
+        STARTING,
+        LOADING,
+        LOADED,
+        EMPTY,
+        NO_PERMISSIONS,
+        NO_LOCATION_PROVIDER
+    }
+
+    fun getLoadMessage(): String {
+        when (loadStatus.value) {
+            PlaylistLoadStatus.STARTING -> return "Starting..."
+            PlaylistLoadStatus.LOADING -> return "Querying map..."
+            PlaylistLoadStatus.EMPTY -> return "No features found. Try increasing your search radius!"
+            PlaylistLoadStatus.NO_PERMISSIONS -> return "Permissions not enabled. Please reload app and enable location permissions."
+            PlaylistLoadStatus.NO_LOCATION_PROVIDER -> return "Debug: Location provider is null"
+            PlaylistLoadStatus.LOADED -> return "You shouldn't be seeing this"
         }
     }
 }

@@ -29,6 +29,8 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import com.example.chordinate.ui.theme.AppTheme
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 
 //This file servers as main entry of program
 
@@ -38,10 +40,15 @@ class MainActivity : ComponentActivity() {
     private lateinit var spotifyAuthLauncher: ActivityResultLauncher<Intent>
     private var songInfo by mutableStateOf("No song info")
     private var isLoggedIn by mutableStateOf(false)
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setApiKey()
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         Log.d(TAG, "onCreate: Starting MainActivity")
 
@@ -101,7 +108,7 @@ class MainActivity : ComponentActivity() {
                 Surface {
                     MainScreen(
                         onAuthorizeClick = ::authorizeWithSpotify, songInfo = songInfo, isLoggedIn = isLoggedIn,
-                        onMapRecenterClick = ::recenterMap
+                        onMapRecenterClick = ::recenterMap, fusedLocationClient = fusedLocationClient
                     )
                 }
             }

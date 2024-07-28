@@ -23,21 +23,18 @@ import com.arcgismaps.mapping.view.LocationDisplay
 import com.arcgismaps.toolkit.geoviewcompose.rememberLocationDisplay
 import com.example.chordinate.RequestPermissions
 import com.example.chordinate.checkPermissions
+import com.google.android.gms.location.FusedLocationProviderClient
 import kotlinx.coroutines.launch
 
 @Composable
-fun RecPlaylistScreen(locationDisplay: LocationDisplay) {
+fun RecPlaylistScreen(fusedLocationClient: FusedLocationProviderClient) {
     val recPlaylistViewModel: RecPlaylistViewModel = viewModel()
-    recPlaylistViewModel.setLocationDisplay(locationDisplay)
+    recPlaylistViewModel.setFusedLocationProvider(fusedLocationClient)
 
     val scrollState = rememberScrollState()
 
     OnLifecycleEvent { owner, event ->
-        // do stuff on event
         when (event) {
-            Lifecycle.Event.ON_CREATE -> {
-                recPlaylistViewModel.refreshLocalPlaylist()
-            }
             Lifecycle.Event.ON_RESUME -> {
                 recPlaylistViewModel.refreshLocalPlaylist()
             }
@@ -46,14 +43,15 @@ fun RecPlaylistScreen(locationDisplay: LocationDisplay) {
     }
 
     Column(modifier=Modifier.verticalScroll(scrollState)) {
-        if (recPlaylistViewModel.songList.isNotEmpty()) {
+        if (recPlaylistViewModel.loadStatus.value == RecPlaylistViewModel.PlaylistLoadStatus.LOADED) {
             recPlaylistViewModel.songList.forEach {
                 RecPlaylistItem(it)
             }
         }
         else {
+
             Text (
-                text = recPlaylistViewModel.loadStatus.value
+                text = recPlaylistViewModel.getLoadMessage()
             )
         }
     }
