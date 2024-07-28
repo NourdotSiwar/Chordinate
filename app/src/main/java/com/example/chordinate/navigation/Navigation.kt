@@ -1,5 +1,6 @@
 package com.example.chordinate.navigation
 
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
@@ -12,6 +13,11 @@ import com.arcgismaps.mapping.view.LocationDisplay
 import com.example.chordinate.recplaylist.RecPlaylistScreen
 import com.example.chordinate.screens.AboutScreen
 import com.example.chordinate.screens.MapViewScreen
+import kotlin.reflect.KFunction1
+import com.example.chordinate.MapViewScreen
+import com.example.chordinate.AboutScreen
+import com.example.chordinate.recplaylist.RecPlaylistScreen
+import com.google.android.gms.location.FusedLocationProviderClient
 
 @Composable
 fun Navigation(
@@ -20,11 +26,12 @@ fun Navigation(
     isLoggedIn: Boolean,
     navController: NavHostController = rememberNavController(),
     paddingValues: PaddingValues,
-    locationDisplay: LocationDisplay
+    locationDisplay: LocationDisplay,
+    fusedLocationClient: FusedLocationProviderClient
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screens.MapView.screen,
+        startDestination = Screens.MapScreen.screen,
         modifier = Modifier.padding(paddingValues)
     ) {
         composable(Screens.MapView.screen) {
@@ -36,7 +43,7 @@ fun Navigation(
             )
         }
         composable(Screens.RecPlaylist.screen) {
-            RecPlaylistScreen(locationDisplay)
+            RecPlaylistScreen(fusedLocationCLient)
         }
         composable(Screens.About.screen) {
             AboutScreen()

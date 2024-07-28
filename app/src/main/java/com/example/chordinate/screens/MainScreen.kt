@@ -1,4 +1,4 @@
-package com.example.chordinate.screens
+package com.example.chordinate
 
 
 import android.Manifest
@@ -35,17 +35,22 @@ import com.example.chordinate.navigation.Navigation
 import com.example.chordinate.navigation.Screens
 import com.example.chordinate.viewmodel.MapViewModel
 import kotlinx.coroutines.launch
+import com.example.uceyecomposeversion.ui.components.BottomBar
+import com.google.android.gms.location.FusedLocationProviderClient
+import kotlin.reflect.KFunction1
 
 // This file controls the UI/Layout
 @Composable
 fun MainScreen(
     onAuthorizeClick: () -> Unit,
     songInfo: String,
-    isLoggedIn: Boolean
+    isLoggedIn: Boolean,
+    fusedLocationClient: FusedLocationProviderClient
 ) {
 
     val mapViewModel: MapViewModel = viewModel()
     val snackbarHostState = remember { mapViewModel.snackbarHostState }
+
     val context = LocalContext.current
     ArcGISEnvironment.applicationContext = context.applicationContext
     val navController = rememberNavController()
@@ -67,7 +72,9 @@ fun MainScreen(
             locationDisplay.dataSource.start()
         }
     } else {
+
         RequestPermissions(
+            context = context,
             onPermissionsGranted = {
                 coroutineScope.launch {
                     locationDisplay.dataSource.start()
@@ -75,6 +82,17 @@ fun MainScreen(
             }
         )
     }
+
+    val navController = rememberNavController()
+    val bottomNavItems = listOf(
+        BottomNavItem(Screens.MapScreen.screen, Screens.MapScreen.icon, Screens.MapScreen.name ),
+        BottomNavItem(Screens.RecPlaylist.screen, Screens.RecPlaylist.icon, Screens.RecPlaylist.name ),
+        BottomNavItem(Screens.About.screen, Screens.About.icon, Screens.About.name ),
+        )
+
+    val topNavItems = listOf(
+        BottomNavItem(Screens.MapScreen.screen, R.drawable.chordinate_one_line, Screens.MapScreen.name)
+    )
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -126,7 +144,7 @@ fun RequestPermissions(onPermissionsGranted: () -> Unit) {
         if (permissions.all { it.value }) {
             onPermissionsGranted()
         } else {
-            println("Location permissions were denied")
+            showError(context, "Location permissions were denied")
         }
     }
 
@@ -139,6 +157,7 @@ fun RequestPermissions(onPermissionsGranted: () -> Unit) {
             )
         )
     }
+
 }
 
 fun checkPermissions(context: Context): Boolean {
@@ -155,4 +174,8 @@ fun checkPermissions(context: Context): Boolean {
     ) == PackageManager.PERMISSION_GRANTED
 
     return permissionCheckCoarseLocation && permissionCheckFineLocation
+}
+
+fun showError(context: Context, message: String) {
+    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
 }
