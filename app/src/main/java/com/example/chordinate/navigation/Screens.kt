@@ -11,8 +11,8 @@ import com.example.chordinate.R
 
 
 sealed class Screens(val screen: String = "", val icon: Int = 0, val name: String = "") {
-    data object MapScreen :
-        Screens(screen = "mapscreen", icon = R.drawable.chordinate_earth , name = "map screen")
+    data object MapView :
+        Screens(screen = "mapview", icon = R.drawable.chordinate_earth , name = "mapview screen")
     data object RecPlaylist :
         Screens(screen = "recplaylist", icon = R.drawable.baseline_album_24, name = "rec playlist")
     data object About :

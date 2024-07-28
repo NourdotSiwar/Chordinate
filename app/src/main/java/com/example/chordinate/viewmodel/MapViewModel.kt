@@ -14,7 +14,7 @@
  *
  */
 
-package com.example.chordinate
+package com.example.chordinate.viewmodel
 
 import android.app.Application
 import androidx.compose.material3.SnackbarHostState
@@ -24,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.arcgismaps.data.ServiceFeatureTable
 import com.arcgismaps.mapping.ArcGISMap
 import com.arcgismaps.mapping.GeoElement
 import com.arcgismaps.mapping.PortalItem
@@ -34,29 +35,14 @@ import com.arcgismaps.toolkit.geoviewcompose.MapViewProxy
 import com.example.chordinate.R
 import kotlinx.coroutines.launch
 
-class MapViewModel(private val application: Application) : AndroidViewModel(application) {
+class MapViewModel(private val application: Application) :
+    AndroidViewModel(application) {
     val mapViewProxy = MapViewProxy()
-
-    // Keep track of the state of the callout content String.
+    val serviceFeatureTable = ServiceFeatureTable(uri = "https://services8.arcgis.com/LLNIdHmmdjO2qQ5q/arcgis/rest/services/NewMockData/FeatureServer/0")
     var calloutContent: String by mutableStateOf("")
-
     var selectedGeoElement by mutableStateOf<GeoElement?>(null)
-
     val map = createMap()
-
     val snackbarHostState = SnackbarHostState()
-
-    private var featureLayer: FeatureLayer? = null
-
-    init {
-        viewModelScope.launch {
-            map.load().onSuccess {
-                snackbarHostState.showSnackbar("Map loaded")
-            }.onFailure { e ->
-                snackbarHostState.showSnackbar("Map did not load ${e.cause} ")
-            }
-        }
-    }
 
     fun identify(singleTapConfirmedEvent: SingleTapConfirmedEvent) {
         viewModelScope.launch {
@@ -70,11 +56,12 @@ class MapViewModel(private val application: Application) : AndroidViewModel(appl
                     results.first().geoElements.firstOrNull()?.let { observation ->
                         selectedGeoElement = observation
                     }
-                    //snackbarHostState.showSnackbar("Success $result")
+                    // snackbarHostState.showSnackbar("application: $application")
                     calloutContent = application.getString(
                         R.string.callout_text,
                         selectedGeoElement?.attributes?.getOrDefault("Song", "No song found"),
-                        selectedGeoElement?.attributes?.getOrDefault("Album_Playlist", "No album found")
+                        selectedGeoElement?.attributes?.getOrDefault("Album", "No album found"),
+                        selectedGeoElement?.attributes?.getOrDefault("Artist", "No artist found")
                     )
                 }
 
@@ -98,8 +85,7 @@ class MapViewModel(private val application: Application) : AndroidViewModel(appl
             itemId = "7f954da98e2c42d099af1632d2cb6d65"
         )
 
-        featureLayer = FeatureLayer.createWithItemAndLayerId(portalItem, 0)
-
+        FeatureLayer.createWithFeatureTable(serviceFeatureTable)
         return ArcGISMap(portalItem)
     }
 }
