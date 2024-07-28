@@ -26,13 +26,10 @@ import androidx.compose.ui.unit.dp
 import com.arcgismaps.mapping.view.LocationDisplay
 
 @Composable
-fun RecPlaylistScreen(locationDisplay: LocationDisplay) {
+fun RecPlaylistScreen() {
     val context = LocalContext.current
     val recPlaylistViewModel = remember {
-        RecPlaylistViewModel(
-            application = context.applicationContext as Application,
-            locationDisplay = locationDisplay
-        )
+        RecPlaylistViewModel(application = context.applicationContext as Application)
     }
     val songList by recPlaylistViewModel.songList.collectAsState()
     val loadStatus by recPlaylistViewModel.loadStatus.collectAsState()

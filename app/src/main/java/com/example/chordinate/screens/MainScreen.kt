@@ -59,22 +59,7 @@ fun MainScreen(
         BottomNavItem(Screens.About.screen, Screens.About.icon, Screens.About.name),
     )
 
-    val coroutineScope = rememberCoroutineScope()
-    val locationDisplay = rememberLocationDisplay()
-    if (checkPermissions(context)) {
-        // Permissions are already granted.
-        LaunchedEffect(Unit) {
-            locationDisplay.dataSource.start()
-        }
-    } else {
-        RequestPermissions(
-            onPermissionsGranted = {
-                coroutineScope.launch {
-                    locationDisplay.dataSource.start()
-                }
-            }
-        )
-    }
+
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -89,8 +74,7 @@ fun MainScreen(
     ) { innerPadding ->
         Navigation(
             onAuthorizeClick,
-            songInfo, isLoggedIn, navController,
-            innerPadding, locationDisplay
+            songInfo, isLoggedIn, navController, innerPadding
         )
     }
 }
@@ -113,46 +97,4 @@ private fun getTopAppBar() {
             )
         },
     )
-}
-
-
-@Composable
-fun RequestPermissions(onPermissionsGranted: () -> Unit) {
-    // Create an activity result launcher using permissions contract and handle the result.
-    val activityResultLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestMultiplePermissions()
-    ) { permissions ->
-        // Check if both fine & coarse location permissions are true.
-        if (permissions.all { it.value }) {
-            onPermissionsGranted()
-        } else {
-            println("Location permissions were denied")
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        activityResultLauncher.launch(
-            // Request both fine and coarse location permissions.
-            arrayOf(
-                Manifest.permission.ACCESS_COARSE_LOCATION,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            )
-        )
-    }
-}
-
-fun checkPermissions(context: Context): Boolean {
-    // Check permissions to see if both permissions are granted.
-    // Coarse location permission.
-    val permissionCheckCoarseLocation = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.ACCESS_COARSE_LOCATION
-    ) == PackageManager.PERMISSION_GRANTED
-    // Fine location permission.
-    val permissionCheckFineLocation = ContextCompat.checkSelfPermission(
-        context,
-        Manifest.permission.ACCESS_FINE_LOCATION
-    ) == PackageManager.PERMISSION_GRANTED
-
-    return permissionCheckCoarseLocation && permissionCheckFineLocation
 }

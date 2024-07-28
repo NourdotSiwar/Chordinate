@@ -20,8 +20,7 @@ import kotlinx.coroutines.launch
 
 
 class RecPlaylistViewModel(
-    application: Application,
-    private val locationDisplay: LocationDisplay
+    application: Application
 ) : AndroidViewModel(application) {
 
     private val _songList = MutableStateFlow<List<RecPlaylistItem>>(emptyList())
@@ -38,17 +37,17 @@ class RecPlaylistViewModel(
         )
     }
 
-    fun refreshLocalPlaylist(radius: Double = 10000.0) {
-        viewModelScope.launch {
-            if (locationDisplay.mapLocation == null) {
-                _loadStatus.value = "Location not found."
-            } else if (locationDisplay.mapLocation!!.x == 0.0 && locationDisplay.mapLocation!!.y == 0.0) {
-                _loadStatus.value =
-                    "Location not yet plotted. Please open the map and wait for the blue dot to load."
-            } else {
-                doRefreshPlaylist(locationDisplay.mapLocation!!, radius)
-            }
-        }
+   fun refreshLocalPlaylist(radius: Double = 10000.0) {
+//        viewModelScope.launch {
+//            if (locationDisplay.mapLocation == null) {
+//                _loadStatus.value = "Location not found."
+//            } else if (locationDisplay.mapLocation!!.x == 0.0 && locationDisplay.mapLocation!!.y == 0.0) {
+//                _loadStatus.value =
+//                    "Location not yet plotted. Please open the map and wait for the blue dot to load."
+//            } else {
+//                doRefreshPlaylist(locationDisplay.mapLocation!!, radius)
+//            }
+//        }
     }
 
     private suspend fun doRefreshPlaylist(center: Point, radius: Double) {

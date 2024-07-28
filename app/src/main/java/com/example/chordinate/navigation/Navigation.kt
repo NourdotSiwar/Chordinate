@@ -20,7 +20,6 @@ fun Navigation(
     isLoggedIn: Boolean,
     navController: NavHostController = rememberNavController(),
     paddingValues: PaddingValues,
-    locationDisplay: LocationDisplay
 ) {
     NavHost(
         navController = navController,
@@ -31,12 +30,11 @@ fun Navigation(
             MapViewScreen(
                 onAuthorizeClick = onAuthorizeClick,
                 songInfo = songInfo,
-                isLoggedIn = isLoggedIn,
-                locationDisplay = locationDisplay
+                isLoggedIn = isLoggedIn
             )
         }
         composable(Screens.RecPlaylist.screen) {
-            RecPlaylistScreen(locationDisplay)
+            RecPlaylistScreen()
         }
         composable(Screens.About.screen) {
             AboutScreen()
